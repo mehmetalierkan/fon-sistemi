@@ -3,19 +3,19 @@ import streamlit as st
 
 _CSS = """
 <style>
-/* --- Genel sayfa zemini: artik duz beyaz degil, hafif renkli gradient --- */
+/* --- Genel sayfa zemini: artik duz beyaz degil, hafif mavimsi gradient --- */
 [data-testid="stAppViewContainer"],
 [data-testid="stMain"],
 .main {
-    background: linear-gradient(160deg, #FAF5FF 0%, #FDF2F8 45%, #FFF9F2 100%) !important;
+    background: linear-gradient(160deg, #EFF6FF 0%, #ECFEFF 45%, #F0FDFA 100%) !important;
 }
 [data-testid="stHeader"] {
     background: transparent !important;
 }
 
-/* --- Sidebar: canli mor-pembe gradient, ikonlu nav --- */
+/* --- Sidebar: canli mavi gradient, ikonlu nav --- */
 [data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #7C3AED 0%, #5B21B6 55%, #3B0764 100%);
+    background: linear-gradient(180deg, #2563EB 0%, #1D4ED8 55%, #172554 100%);
 }
 [data-testid="stSidebar"] * {
     color: #FFFFFF !important;
@@ -49,27 +49,27 @@ _CSS = """
 
 /* --- Metric kartlari --- */
 [data-testid="stMetric"] {
-    background: linear-gradient(135deg, #F3E8FF 0%, #FDF2F8 100%);
-    border: 1.5px solid #A78BFA;
-    border-top: 5px solid #7C3AED;
+    background: linear-gradient(135deg, #DBEAFE 0%, #ECFEFF 100%);
+    border: 1.5px solid #60A5FA;
+    border-top: 5px solid #2563EB;
     border-radius: 14px;
     padding: 16px 18px;
-    box-shadow: 0 6px 18px rgba(124, 58, 237, 0.20);
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.20);
 }
 [data-testid="stMetricLabel"] {
     font-weight: 600;
-    color: #6D28D9 !important;
+    color: #1D4ED8 !important;
 }
 [data-testid="stMetricValue"] {
-    color: #3B0764 !important;
+    color: #172554 !important;
 }
 
 /* --- Basliklar (subheader/header) - renkli sol serit + hafif zemin --- */
 [data-testid="stMain"] h2,
 [data-testid="stMain"] h3 {
-    border-left: 5px solid #7C3AED;
+    border-left: 5px solid #2563EB;
     padding: 4px 0 4px 14px;
-    background: linear-gradient(90deg, rgba(124, 58, 237, 0.10), rgba(124, 58, 237, 0) 80%);
+    background: linear-gradient(90deg, rgba(37, 99, 235, 0.10), rgba(37, 99, 235, 0) 80%);
     border-radius: 6px;
 }
 
@@ -79,40 +79,40 @@ _CSS = """
 [data-testid="stTextInput"] [role="group"],
 [data-testid="stDateInput"] [role="group"],
 [data-testid="stTextArea"] [role="group"] {
-    border: 2px solid #A78BFA !important;
+    border: 2px solid #60A5FA !important;
     border-radius: 10px !important;
-    background-color: #FDFBFF !important;
+    background-color: #F8FBFF !important;
 }
 [data-testid="stSelectbox"] [role="group"]:focus-within,
 [data-testid="stNumberInputContainer"]:focus-within,
 [data-testid="stTextInput"] [role="group"]:focus-within,
 [data-testid="stDateInput"] [role="group"]:focus-within {
-    border-color: #7C3AED !important;
-    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.18) !important;
+    border-color: #2563EB !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18) !important;
 }
 
 /* --- Ayirici cizgiler --- */
 [data-testid="stMain"] hr {
     height: 3px !important;
     border: none !important;
-    background: linear-gradient(90deg, #7C3AED, #EC4899, #F97316) !important;
+    background: linear-gradient(90deg, #2563EB, #06B6D4, #0D9488) !important;
     opacity: 0.55;
     border-radius: 3px;
 }
 
 /* --- Expander kutulari --- */
 [data-testid="stExpander"] {
-    border: 1px solid #E9D5FF !important;
+    border: 1px solid #BFDBFE !important;
     border-radius: 14px !important;
-    background: linear-gradient(135deg, #FDFBFF, #FFF7FB) !important;
-    box-shadow: 0 3px 10px rgba(124, 58, 237, 0.08);
+    background: linear-gradient(135deg, #F8FBFF, #F0FDFA) !important;
+    box-shadow: 0 3px 10px rgba(37, 99, 235, 0.08);
 }
 
 /* --- Dataframe cercevesi --- */
 [data-testid="stDataFrame"] {
     border-radius: 12px;
     overflow: hidden;
-    border: 1px solid #E9D5FF;
+    border: 1px solid #BFDBFE;
 }
 
 /* --- Uyari/bilgi kutulari --- */
@@ -122,7 +122,7 @@ _CSS = """
 
 /* --- Butonlar --- */
 .stButton>button, .stFormSubmitButton>button, .stDownloadButton>button {
-    background: linear-gradient(90deg, #7C3AED, #EC4899);
+    background: linear-gradient(90deg, #2563EB, #06B6D4);
     color: white;
     border: none;
     border-radius: 12px;
@@ -138,14 +138,14 @@ _CSS = """
 
 /* --- Basliklar --- */
 .gradient-title {
-    background: linear-gradient(90deg, #7C3AED, #EC4899 55%, #F97316);
+    background: linear-gradient(90deg, #2563EB, #06B6D4 55%, #0D9488);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     font-weight: 800;
     padding-bottom: 0.2rem;
 }
 .gradient-subtitle {
-    color: #6D28D9;
+    color: #1D4ED8;
     font-weight: 600;
 }
 
@@ -154,14 +154,14 @@ _CSS = """
     gap: 6px;
 }
 .stTabs [data-baseweb="tab"] {
-    background-color: #F5F3FF;
+    background-color: #EFF6FF;
     border-radius: 10px 10px 0 0;
     padding: 8px 16px;
     font-weight: 600;
 }
 .stTabs [aria-selected="true"] {
-    background-color: #EDE9FE;
-    color: #6D28D9 !important;
+    background-color: #DBEAFE;
+    color: #1D4ED8 !important;
 }
 
 /* --- Expander basliklari --- */
