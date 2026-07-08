@@ -72,7 +72,20 @@ else:
             "en_iyi_skor": "En İyi Fon Skoru %",
         }
     )
-    st.dataframe(tema_tablo, width="stretch", height=400)
+    st.dataframe(
+        tema_tablo,
+        width="stretch",
+        height=400,
+        column_config={
+            "Tema": st.column_config.TextColumn(help="Fon adından tahmin edilen sektör/tema etiketi."),
+            "Fon Sayısı": st.column_config.NumberColumn(help="Bu temada, güvenilirlik filtresini geçen fon sayısı."),
+            "Ort. 1A Getiri %": st.column_config.NumberColumn(help="Bu temadaki fonların ortalama 1 aylık getirisi.", format="%.2f%%"),
+            "Ort. 3A Getiri %": st.column_config.NumberColumn(help="Bu temadaki fonların ortalama 3 aylık getirisi.", format="%.2f%%"),
+            "Ort. Getiri Skoru %": st.column_config.NumberColumn(help="1a/3a/6a getirilerinin ortalaması; sıralama bu skora göre yapılır."),
+            "En İyi Fon": st.column_config.TextColumn(help="Bu temada en yüksek getiri skoruna sahip fon."),
+            "En İyi Fon Skoru %": st.column_config.NumberColumn(help="En iyi fonun getiri skoru."),
+        },
+    )
     st.caption(
         "Yalnızca güvenilirlik filtresini geçen fonlar dahildir (büyüklük ≥ 10 mn TL, yatırımcı ≥ 20, "
         "anomali getiriler hariç). 'Genel / Karma' etiketi, fonun adından tema tahmin edilemediği anlamına gelir."
@@ -109,14 +122,20 @@ else:
             "en_iyi_skor": "En İyi Hisse Skoru",
         }
     )
-    st.dataframe(sektor_tablo, width="stretch", height=400)
+    st.dataframe(
+        sektor_tablo,
+        width="stretch",
+        height=400,
+        column_config={
+            "Sektör": st.column_config.TextColumn(help="Elle hazırlanmış sabit sektör haritasından gelen etiket."),
+            "Hisse Sayısı": st.column_config.NumberColumn(help="Bu sektörde izleme listesinde bulunan hisse sayısı."),
+            "Ort. Teknik Skor": st.column_config.NumberColumn(help="Sektördeki hisselerin ortalama teknik skoru (trend+RSI+hacim+momentum)."),
+            "Ort. 5G Momentum %": st.column_config.NumberColumn(help="Sektördeki hisselerin ortalama 5 günlük momentumu.", format="%.2f%%"),
+            "En İyi Hisse": st.column_config.TextColumn(help="Bu sektörde en yüksek teknik skora sahip hisse."),
+            "En İyi Hisse Skoru": st.column_config.NumberColumn(help="En iyi hissenin teknik skoru."),
+        },
+    )
     st.caption(
         "Sektör etiketleri, izleme listesindeki hisseler için elle hazırlanmış sabit bir haritadan gelir "
         "(borsa/resmi kaynak verisi değildir). Skor formülü Günlük İşlem Analizi sayfasıyla aynıdır."
     )
-
-st.divider()
-st.info(
-    "Bu sıralamalar geçmiş performansa dayalı anlık bir fotoğraftır ve yatırım tavsiyesi değildir. "
-    "Yüksek performanslı bir sektörün gelecekte de iyi performans göstereceği garanti edilemez."
-)

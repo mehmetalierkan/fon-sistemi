@@ -20,11 +20,6 @@ st.caption(
     "hisse-sektör eşleşmesi ise elle hazırlanmış sabit bir haritadan gelir. Kriterlerin tam açıklaması için "
     "sol menüden **🧭 Nasıl Değerlendiriyoruz?** sayfasına bakabilirsiniz."
 )
-st.warning(
-    "⚠️ Bu bir otomatik alım-satım sistemi değildir ve yatırım tavsiyesi değildir. Öneriler geçmiş "
-    "performansa dayalı otomatik bir taramadır; tüm alım-satım kararları ve sorumluluk size aittir."
-)
-
 col_a, col_b, col_c = st.columns([1, 1, 1])
 with col_a:
     fund_budget = st.number_input(
@@ -167,7 +162,20 @@ def _render_portfolio(title: str, icon: str, df: pd.DataFrame, notes: list, tur_
             "skor": "Skor",
         }
     )
-    st.dataframe(ozet, width="stretch")
+    st.dataframe(
+        ozet,
+        width="stretch",
+        column_config={
+            "Kod": st.column_config.TextColumn(help="Fon veya hisse kodu."),
+            "Sektör / Tema": st.column_config.TextColumn(help="Hedef tabloda girdiğiniz sektör/tema başlığı."),
+            "Pay %": st.column_config.NumberColumn(help="Bu enstrümanın toplam bütçe içindeki payı.", format="%.1f%%"),
+            "Tutar (TL)": st.column_config.NumberColumn(help="Bu enstrümana ayrılan TL tutarı."),
+            "1A Getiri % (fon)": st.column_config.NumberColumn(help="Sadece fonlar için: son 1 aylık getiri.", format="%.2f%%"),
+            "3A Getiri % / 5G Momentum %": st.column_config.NumberColumn(help="Fonlarda 3 aylık getiri, hisselerde 5 günlük momentum.", format="%.2f%%"),
+            "Yıllık Vol. % (fon)": st.column_config.NumberColumn(help="Sadece fonlar için: yıllıklandırılmış volatilite (risk göstergesi)."),
+            "Skor": st.column_config.NumberColumn(help="Fonlarda getiri/volatilite oranı, hisselerde teknik skor; seçim bu skora göre yapılır."),
+        },
+    )
 
 
 as_of = dt.date.today()

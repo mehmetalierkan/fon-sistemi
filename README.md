@@ -1,7 +1,7 @@
 # Fon & BIST Hisse Analiz Sistemi
 
-Haftalık TEFAS fon analizi ve günlük BIST hisse taraması için yerel bir Streamlit paneli.
-Yalnızca bilgilendirme/analiz amaçlıdır, yatırım tavsiyesi değildir.
+Haftalık TEFAS fon analizi, günlük BIST/ABD hisse taraması, döviz/kıymetli maden takibi ve
+analist önerileri için yerel bir Streamlit paneli.
 
 ## Kurulum
 

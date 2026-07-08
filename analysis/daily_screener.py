@@ -1,17 +1,27 @@
-"""Gunluk BIST hisse teknik tarama ve gerekceli oneri uretimi (10.000 TL'lik gunluk islem butcesi icin)."""
+"""Gunluk hisse teknik tarama ve gerekceli oneri uretimi (BIST icin 10.000 TL'lik gunluk islem butcesi).
+
+Ayni skorlama formulu (trend + RSI + hacim + momentum), ticker'lara nasil ulasildigi disinda
+degismeden, ABD borsasi taramasi (build_us_screening) icin de kullanilir - kriterler her iki
+sayfada da birebir aynidir.
+"""
 from __future__ import annotations
+
+from typing import Callable
 
 import pandas as pd
 
 from data import stock_client as sc
 
 
-def build_daily_screening(budget_tl: float = 10_000.0, watchlist: list[str] | None = None) -> pd.DataFrame:
-    watchlist = watchlist or sc.WATCHLIST
+def _score_watchlist(
+    watchlist: list[str],
+    budget_tl: float,
+    history_fn: Callable[[str], pd.DataFrame],
+) -> pd.DataFrame:
     rows = []
     for code in watchlist:
         try:
-            hist = sc.get_stock_history(code, range_="3mo", interval="1d")
+            hist = history_fn(code)
         except Exception:
             continue
         if len(hist) < 25:
@@ -50,6 +60,23 @@ def build_daily_screening(budget_tl: float = 10_000.0, watchlist: list[str] | No
     if not rows:
         return pd.DataFrame()
     return pd.DataFrame(rows).sort_values("skor", ascending=False).reset_index(drop=True)
+
+
+def build_daily_screening(budget_tl: float = 10_000.0, watchlist: list[str] | None = None) -> pd.DataFrame:
+    watchlist = watchlist or sc.WATCHLIST
+    return _score_watchlist(
+        watchlist, budget_tl, lambda code: sc.get_stock_history(code, range_="3mo", interval="1d")
+    )
+
+
+def build_us_screening(budget_usd: float = 1_000.0, watchlist: list[str] | None = None) -> pd.DataFrame:
+    """ABD borsasi icin ayni skorlama formulu; fiyatlar USD, butce de USD cinsindendir."""
+    from data import global_client as gc
+
+    watchlist = watchlist or gc.US_WATCHLIST
+    return _score_watchlist(
+        watchlist, budget_usd, lambda code: sc.get_history_for_ticker(code, range_="3mo", interval="1d")
+    )
 
 
 def _build_rationale(trend_up: bool, rsi: float, vol_ratio: float, momentum_5d: float) -> str:

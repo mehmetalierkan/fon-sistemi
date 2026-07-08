@@ -12,9 +12,9 @@ st.caption(
     "TEFAS'ın herkese açık verileriyle hesaplanır. Not: TEFAS'ın ücretsiz API'si fonun *varlık sınıfı* "
     "dağılımını (hisse senedi/tahvil/döviz vb. yüzdeleri) verir; fon içindeki spesifik hisse senedi "
     "isimlerini/ağırlıklarını vermez. **Sektör/Tema** filtresi fonun adından tahmin edilir (ör. 'Amerika "
-    "Hisse Senedi Fonu' → Amerika), TEFAS'tan gelen kesin bir sektör verisi değildir. Kriterlerin tam "
-    "açıklaması için sol menüden **🧭 Nasıl Değerlendiriyoruz?** sayfasına bakabilirsiniz."
+    "Hisse Senedi Fonu' → Amerika), TEFAS'tan gelen kesin bir sektör verisi değildir."
 )
+st.page_link("views/methodology.py", label="🧭 Kriterlerin tam açıklaması için Nasıl Değerlendiriyoruz? sayfasına gidin", icon="🧭")
 
 
 @st.cache_data(ttl=3600, show_spinner="TEFAS'tan fon verileri çekiliyor (birkaç dakika sürebilir)...")
@@ -109,6 +109,18 @@ st.dataframe(
     returns_df[display_cols].sort_values("getiri_1a", ascending=False).reset_index(drop=True),
     width="stretch",
     height=400,
+    column_config={
+        "fonKodu": st.column_config.TextColumn("Fon Kodu", help="TEFAS fon kodu (3 harf)."),
+        "fonUnvan": st.column_config.TextColumn("Fon Unvanı", help="Fonun tam adı."),
+        "kategori": st.column_config.TextColumn("Kategori", help="TEFAS'ın resmi fon kategorisi (Hisse Senedi, Borçlanma Araçları vb.)."),
+        "tema": st.column_config.TextColumn("Tema", help="Fon adından tahmin edilen sektör/tema odağı - resmi TEFAS verisi değildir."),
+        "getiri_1h": st.column_config.NumberColumn("1 Hafta %", help="Son 1 haftalık getiri.", format="%.2f%%"),
+        "getiri_1a": st.column_config.NumberColumn("1 Ay %", help="Son 1 aylık getiri.", format="%.2f%%"),
+        "getiri_3a": st.column_config.NumberColumn("3 Ay %", help="Son 3 aylık getiri.", format="%.2f%%"),
+        "getiri_6a": st.column_config.NumberColumn("6 Ay %", help="Son 6 aylık getiri.", format="%.2f%%"),
+        "yillik_volatilite_pct": st.column_config.NumberColumn("Yıllık Volatilite %", help="Son 3 aylık günlük getirilerin yıllıklandırılmış standart sapması; risk göstergesidir."),
+        "kategori_persentil_1a": st.column_config.NumberColumn("Kategori Persentili", help="Bu fonun 1 aylık getirisinin, aynı kategorideki fonların yüzde kaçından daha iyi olduğu."),
+    },
 )
 
 st.divider()

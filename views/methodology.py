@@ -213,7 +213,68 @@ Bu sayfa iki ayrı sıralama üretir; ikisi de **bu an itibariyle** çekilen ver
 
 **Önemli sınır:** Tema/sektör etiketlerinin kaynağı Şemsiye Portföy sayfasıyla aynıdır (fonlarda isim
 bazlı tahmin, hisselerde elle hazırlanmış harita). Geçmiş performans sıralaması geleceğe dair garanti
-vermez; bu sayfa yatırım tavsiyesi değildir.
+vermez.
+"""
+)
+
+st.divider()
+st.markdown("## 🇺🇸 ABD Borsası Kriterleri")
+st.markdown(
+    """
+Büyük/likit ABD hisseleri (ör. AAPL, MSFT, NVDA, JPM) için **⚡ Günlük İşlem Analizi ile birebir aynı**
+teknik tarama formülü kullanılır (Trend + RSI(14) + Hacim oranı + 5 günlük Momentum → skor). Tek fark
+verinin USD cinsinden olması ve evrenin ABD hisseleri olmasıdır. Ayrıca S&P 500, Nasdaq Composite ve
+Dow Jones Endüstri endeksleri karşılaştırma amacıyla gösterilir. Sektör etiketleri (ör. Teknoloji,
+Bankacılık/Finans) BIST hisselerindeki gibi elle hazırlanmış sabit bir haritadan gelir.
+"""
+)
+
+st.divider()
+st.markdown("## 💱 Döviz & Kıymetli Maden Kriterleri")
+st.markdown(
+    """
+Dolar/Euro/Sterlin paritesi ile ons altın/gümüş fiyatları (Yahoo Finance üzerinden) aynı teknik
+bileşenlerle (Trend + RSI(14) + 5 günlük Momentum) değerlendirilir, ancak Günlük İşlem Analizi'ndeki
+gibi bir sayısal skor yerine basit bir **yön okuması** üretilir:
+
+- **Al Yönlü**: Fiyat SMA20/SMA50 üzerinde, RSI aşırı alım bölgesinde değil, momentum pozitif.
+- **Sat Yönlü**: Fiyat SMA20/SMA50 altında, RSI aşırı satım bölgesinde değil, momentum negatif.
+- **Nötr**: Sinyaller karışık, belirgin bir yön yok.
+
+Gram altın/gümüş TL karşılığı, ons fiyatının (USD) güncel Dolar/TL kuruyla çarpılıp 31.1034768'e
+(1 ons = bu kadar gram) bölünmesiyle hesaplanır.
+"""
+)
+
+st.divider()
+st.markdown("## 🏛️ Analist Önerileri Kriterleri")
+st.markdown(
+    """
+Bu sayfa kendi teknik skorlama sistemimizi değil, **farklı yatırım kuruluşlarının (sell-side
+analistlerin)** o hisse için verdiği al/sat görüşlerinin özetini gösterir — Yahoo Finance'in topladığı
+konsensus verisi kullanılır:
+
+- **Konsensus Skoru**: 1.0 (Güçlü Al) ile 5.0 (Güçlü Sat) arasında, analist görüşlerinin ortalaması.
+  Düşük skor = daha olumlu konsensus. Sıralama bu skora göre (düşükten yükseğe) yapılır.
+- **Analist dağılımı**: Güçlü Al / Al / Tut / Sat / Güçlü Sat kategorilerinde kaç analist görüş
+  bildirdiği.
+- **Hedefe göre potansiyel**: Analistlerin ortalama hedef fiyatının güncel fiyata göre yüzde farkı.
+
+**Önemli sınır:** Bu veri, herkese açık ama belgelendirilmemiş bir Yahoo Finance uç noktasından gelir;
+özellikle küçük/az takip edilen BIST hisselerinde analist kapsaması bulunmayabilir — bu durumda hisse
+tabloda hiç görünmez (sıfır olarak değil, eksik veri olarak ele alınır).
+"""
+)
+
+st.divider()
+st.markdown("## ⭐ Ana Sayfa \"Öne Çıkanlar\" ve Bütçe Ayarları")
+st.markdown(
+    """
+Ana sayfadaki Fonlar / BIST Hisseleri / ABD Hisseleri / Döviz-Altın sekmeleri, **yeni bir kriter
+üretmez** — her biri kendi sayfasındaki sıralamanın ilk 3 sonucunu gösterir (yukarıdaki ilgili bölümlere
+bakın). Ana sayfadaki **Yatırım Bütçelerim** alanı, Portföyüm sayfasındaki Haftalık Fon Kasası / Günlük
+İşlem Kasası nakit bakiyesini doğrudan günceller; bu bakiyeler diğer sayfalardaki (Günlük İşlem Analizi,
+Şemsiye Portföy Oluşturucu) varsayılan bütçe değerleridir.
 """
 )
 
@@ -233,9 +294,11 @@ st.markdown(
     """
 - **TEFAS** (tefas.gov.tr) — resmi olmayan ama herkese açık JSON API'si; fon fiyat geçmişi, getiri
   sıralaması ve varlık dağılımı için kullanılır.
-- **Yahoo Finance** chart API — BIST hisseleri için fiyat/hacim geçmişi.
+- **Yahoo Finance** chart API — BIST/ABD hisseleri, döviz paritesi ve kıymetli maden futures'ları için
+  fiyat/hacim geçmişi.
+- **Yahoo Finance** quoteSummary uç noktası (crumb/çerez ile) — Analist Önerileri sayfasındaki sell-side
+  konsensus verisi için.
 - Sistem **hiçbir aracı kuruma (Midas dahil) otomatik bağlanmaz**, emir göndermez. Sadece analiz ve
   öneri üretir; gerçekleştirdiğiniz işlemleri Portföyüm sayfasından elle girmeniz gerekir.
-- Bu sistem **yatırım tavsiyesi değildir**; tüm kararlar ve sorumluluk size aittir.
 """
 )

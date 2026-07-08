@@ -65,8 +65,12 @@ def _to_ticker(code: str) -> str:
     return code if code.endswith(".IS") else f"{code}.IS"
 
 
-def get_stock_history(code: str, range_: str = "6mo", interval: str = "1d") -> pd.DataFrame:
-    ticker = _to_ticker(code)
+def get_history_for_ticker(ticker: str, range_: str = "6mo", interval: str = "1d") -> pd.DataFrame:
+    """Yahoo Finance chart API'den HAM ticker (suffix eklenmeden) icin OHLCV + indikator getirir.
+
+    BIST disindaki enstrumanlar (doviz, kiymetli maden, ABD hisseleri/endeksleri) icin
+    data/global_client.py tarafindan da kullanilir; bu yuzden .IS suffix'i burada eklenmez.
+    """
     url = CHART_URL.format(ticker=ticker)
     resp = requests.get(url, params={"range": range_, "interval": interval}, headers=HEADERS, timeout=20)
     resp.raise_for_status()
@@ -88,8 +92,8 @@ def get_stock_history(code: str, range_: str = "6mo", interval: str = "1d") -> p
     return _add_indicators(df)
 
 
-def get_stock_quote(code: str) -> dict:
-    ticker = _to_ticker(code)
+def get_quote_for_ticker(ticker: str, display_code: str | None = None) -> dict:
+    """Yahoo Finance chart API'den HAM ticker icin guncel fiyat/gun araligi bilgisi getirir."""
     url = CHART_URL.format(ticker=ticker)
     resp = requests.get(url, params={"range": "5d", "interval": "1d"}, headers=HEADERS, timeout=20)
     resp.raise_for_status()
@@ -99,7 +103,7 @@ def get_stock_quote(code: str) -> dict:
         return {}
     meta = result[0].get("meta") or {}
     return {
-        "kod": code.upper(),
+        "kod": display_code or ticker,
         "fiyat": meta.get("regularMarketPrice"),
         "onceki_kapanis": meta.get("chartPreviousClose"),
         "gun_yuksek": meta.get("regularMarketDayHigh"),
@@ -109,6 +113,14 @@ def get_stock_quote(code: str) -> dict:
         "52h_dusuk": meta.get("fiftyTwoWeekLow"),
         "ad": meta.get("longName") or meta.get("shortName"),
     }
+
+
+def get_stock_history(code: str, range_: str = "6mo", interval: str = "1d") -> pd.DataFrame:
+    return get_history_for_ticker(_to_ticker(code), range_=range_, interval=interval)
+
+
+def get_stock_quote(code: str) -> dict:
+    return get_quote_for_ticker(_to_ticker(code), display_code=code.upper())
 
 
 def _rsi(series: pd.Series, period: int = 14) -> pd.Series:

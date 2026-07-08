@@ -64,6 +64,23 @@ def get_balance(bucket: str) -> float:
         conn.close()
 
 
+def set_balance(bucket: str, new_balance: float) -> None:
+    """Kasa bakiyesini dogrudan gunceller (yatirilacak/planlanan butceyi elle ayarlamak icin).
+
+    Islem gecmisini etkilemez; sadece nakit bakiyeyi yeni deger olarak yazar.
+    """
+    if bucket not in BUCKETS:
+        raise ValueError(f"Gecersiz kasa: {bucket}")
+    if new_balance < 0:
+        raise ValueError("Bakiye negatif olamaz")
+    conn = get_connection()
+    try:
+        conn.execute("UPDATE cash_ledger SET balance = ? WHERE bucket = ?", (float(new_balance), bucket))
+        conn.commit()
+    finally:
+        conn.close()
+
+
 def add_transaction(
     bucket: str,
     instrument_code: str,

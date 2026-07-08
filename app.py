@@ -14,10 +14,16 @@ apply_theme()
 home = st.Page("views/home.py", title="Ana Sayfa", icon="🏠", default=True)
 weekly = st.Page("views/weekly_fund.py", title="Haftalık Fon Analizi", icon="📈")
 daily = st.Page("views/daily_stock.py", title="Günlük İşlem Analizi", icon="⚡")
+us_market = st.Page("views/abd_borsasi.py", title="ABD Borsası", icon="🇺🇸")
+fx_metals = st.Page("views/doviz_kiymetli_maden.py", title="Döviz & Kıymetli Maden", icon="💱")
+analyst_page = st.Page("views/analist_onerileri.py", title="Analist Önerileri", icon="🏛️")
 portfolio_page = st.Page("views/portfolio.py", title="Portföyüm", icon="💼")
 umbrella_page = st.Page("views/semsiye_portfoy.py", title="Şemsiye Portföy Oluşturucu", icon="🌂")
 sector_page = st.Page("views/sektorel_performans.py", title="Sektörel Performans", icon="🏆")
 methodology = st.Page("views/methodology.py", title="Nasıl Değerlendiriyoruz?", icon="🧭")
 
-pg = st.navigation([home, weekly, daily, portfolio_page, umbrella_page, sector_page, methodology])
+pg = st.navigation([
+    home, weekly, daily, us_market, fx_metals, analyst_page,
+    portfolio_page, umbrella_page, sector_page, methodology,
+])
 pg.run()

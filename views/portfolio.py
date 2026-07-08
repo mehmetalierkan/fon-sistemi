@@ -58,7 +58,19 @@ def _render_bucket(bucket: str, label: str, price_lookup, code_help: str) -> Non
                 "Gerçekleşmemiş K/Z": pos["gerceklesmemis_kz"],
                 "Gerçekleşmiş K/Z": pos["realized_pnl"],
             })
-        st.dataframe(pd.DataFrame(rows), width="stretch")
+        st.dataframe(
+            pd.DataFrame(rows),
+            width="stretch",
+            column_config={
+                "Kod": st.column_config.TextColumn(help="Fon kodu veya hisse kodu."),
+                "Adet": st.column_config.NumberColumn(help="Elinizde bulunan güncel adet."),
+                "Ort. Maliyet": st.column_config.NumberColumn(help="Ortalama maliyet yöntemiyle hesaplanan birim alış maliyeti."),
+                "Güncel Fiyat": st.column_config.NumberColumn(help="Son çekilen güncel piyasa fiyatı."),
+                "Piyasa Değeri": st.column_config.NumberColumn(help="Adet × güncel fiyat."),
+                "Gerçekleşmemiş K/Z": st.column_config.NumberColumn(help="(Güncel fiyat - ortalama maliyet) × adet; henüz satılmamış pozisyonun kâr/zararı."),
+                "Gerçekleşmiş K/Z": st.column_config.NumberColumn(help="Bugüne kadar yapılan satışlardan elde edilen gerçekleşmiş kâr/zarar."),
+            },
+        )
     else:
         st.info("Henüz açık pozisyon yok.")
 
