@@ -120,6 +120,96 @@ st.markdown(
 )
 
 st.divider()
+st.markdown("## 🌂 Şemsiye Portföy Oluşturucu Kriterleri")
+
+st.markdown("#### 1) Sektör/tema eşleştirme kaynakları")
+st.markdown(
+    """
+Girdiğiniz her sektör/tema başlığı için iki aday havuzu oluşturulur:
+
+- **Fonlar**: Fonun **unvanındaki anahtar kelimelerden** tahmin edilen tema etiketi kullanılır
+  (Haftalık Fon Analizi'ndeki Sektör/Tema etiketiyle aynı mekanizma). *Yenilenebilir Enerji* seçilirse
+  fon adında "YENİLENEBİLİR", "TEMİZ ENERJİ", "GÜNEŞ", "RÜZGAR" gibi kelimeler aranır; *Perakende / Gıda*
+  seçilirse fon tarafında "Tarım / Gıda" temasıyla eşleştirilir.
+- **Hisseler**: İzleme listesindeki her hisse için **elle hazırlanmış sabit bir sektör haritası**
+  kullanılır (ör. GARAN → Bankacılık / Finans, LOGO → Teknoloji, AYDEM/GWIND → Yenilenebilir Enerji).
+
+**Önemli sınır:** Fon eşleşmesi isim bazlı bir **tahmindir** — TEFAS'ın ücretsiz API'si fonun gerçek
+portföyündeki sektörel dağılımı vermez. Hisse eşleşmesi de resmi bir sınıflandırma değil, elle atanmış
+bir haritadır. *Ulaştırma*, *Telekom* ve *Holding* başlıkları fon adlarından tahmin edilemediği için bu
+başlıklarda yalnızca hisse önerilir; bir başlıkta uygun/likit hisse yoksa yalnızca fon önerilir ve bu
+durum size açıkça bildirilir.
+"""
+)
+
+st.markdown("#### 2) Yüzde normalizasyonu")
+st.markdown(
+    """
+Girdiğiniz hedef yüzdelerin toplamı 100 değilse, oranlar korunarak otomatik olarak **%100'e normalize
+edilir** ve sayfada bir uyarıyla belirtilir. Aynı sektör birden fazla satırda girilirse yüzdeleri toplanır.
+Hiç adayı bulunamayan bir sektör portföyden çıkarılır ve yüzdesi kalan sektörlere oransal dağıtılır.
+"""
+)
+
+st.markdown("#### 3) Aday seçimi ve skorlar")
+st.markdown(
+    """
+Her sektör içinde adaylar mevcut sayfaların skorlama mantığıyla sıralanır:
+
+- **Fonlar**: Önce güvenilirlik filtresi uygulanır (büyüklük ≥ 10 mn TL, yatırımcı ≥ 20, anomali
+  getiriler hariç — Haftalık Fon Analizi ile aynı). Ardından en yüksek getirili adayların 3 aylık
+  volatilitesi hesaplanıp **getiri ÷ volatilite** oranına göre sıralanır.
+- **Hisseler**: Günlük İşlem Analizi'ndeki **teknik skor** kullanılır (trend + RSI + hacim + momentum).
+
+Sektör içinde birden fazla öneri gerekiyorsa çeşitlilik için **en iyi fon ile en iyi hisse dönüşümlü**
+seçilir; yalnızca tek tür aday varsa o türün en iyileri alınır. Aynı enstrüman iki sektörde birden önerilmez.
+"""
+)
+
+st.markdown("#### 4) 5–10 öneri kısıtı")
+st.markdown(
+    """
+Toplam öneri sayısı her zaman **5 ile 10 arasında** tutulur. Hedef sayı `2 × sektör sayısı` olarak
+başlar ve 5–10 bandına sıkıştırılır:
+
+- **10'dan fazla sektör** girilirse en yüksek yüzdeli 10 sektör tutulur, kalanlar uyarıyla çıkarılır.
+- **1–2 sektör** girilirse her sektörden birden fazla enstrüman (sektör başına en fazla 5) alınarak
+  toplam 5'e tamamlanır.
+- Ek öneri hakları, yüzdesi yüksek sektörlere öncelik verilerek dağıtılır. Uygun aday sayısı yetersizse
+  toplam 5'in altında kalabilir; bu durum açıkça bildirilir.
+"""
+)
+
+st.markdown("#### 5) Tutar dağıtımı")
+st.markdown(
+    """
+Her sektörün payı `toplam bütçe × normalize yüzde` olarak hesaplanır; sektör içinde birden fazla öneri
+varsa bu tutar öneriler arasında **eşit bölünür**. Hisseler için ayrılan tutarla kaç adet alınabileceği
+güncel fiyattan hesaplanıp gösterilir.
+"""
+)
+
+st.divider()
+st.markdown("## 🏆 Sektörel Performans Kriterleri")
+st.markdown(
+    """
+Bu sayfa iki ayrı sıralama üretir; ikisi de **bu an itibariyle** çekilen verinin anlık görüntüsüdür
+(fon evreni 1 saat, hisse taraması 15 dakika önbelleklenir, "Verileri Yenile" ile güncellenir):
+
+- **Fon Temaları**: Güvenilirlik filtresini geçen fonlar tema etiketine göre gruplanır; her tema için
+  fon sayısı, **ortalama 1 ay / 3 ay getirisi** ve ortalama getiri skoru (1a/3a/6a getirilerinin
+  ortalaması) hesaplanır. Sıralama ortalama getiri skoruna göredir; temanın en iyi fonu da gösterilir.
+- **Hisse Sektörleri**: İzleme listesindeki hisseler sabit sektör haritasına göre gruplanır; her sektör
+  için hisse sayısı, **ortalama teknik skor** ve ortalama 5 günlük momentum hesaplanır. Sıralama
+  ortalama teknik skora göredir; sektörün en yüksek skorlu hissesi de gösterilir.
+
+**Önemli sınır:** Tema/sektör etiketlerinin kaynağı Şemsiye Portföy sayfasıyla aynıdır (fonlarda isim
+bazlı tahmin, hisselerde elle hazırlanmış harita). Geçmiş performans sıralaması geleceğe dair garanti
+vermez; bu sayfa yatırım tavsiyesi değildir.
+"""
+)
+
+st.divider()
 st.markdown("## 💼 Portföy Hesaplamaları")
 st.markdown(
     """

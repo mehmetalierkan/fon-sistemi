@@ -8,12 +8,56 @@ CHART_URL = "https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
 HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
 
 # Likit BIST30/BIST100 hisselerinden gunluk tarama icin sabit izleme listesi.
+# LOGO (Teknoloji), AYDEM ve GWIND (Yenilenebilir Enerji) sektorel kapsama icin eklendi;
+# uclu de Yahoo Finance {KOD}.IS uzerinden canli veri dondurdugu dogrulanarak listeye alindi.
 WATCHLIST: list[str] = [
     "THYAO", "ASELS", "GARAN", "AKBNK", "ISCTR", "KCHOL", "SASA", "TUPRS", "EREGL",
     "BIMAS", "SISE", "PGSUS", "FROTO", "TOASO", "YKBNK", "VAKBN", "HALKB", "KOZAL",
     "EKGYO", "ENKAI", "PETKM", "TCELL", "TTKOM", "ARCLK", "DOHOL", "MGROS", "SAHOL",
-    "ULKER", "VESTL", "KRDMD",
+    "ULKER", "VESTL", "KRDMD", "LOGO", "AYDEM", "GWIND",
 ]
+
+# Izleme listesindeki her hisse icin ELLE atanmis sabit sektor etiketi.
+# Bu bir borsa/resmi kaynak verisi degildir; sirketlerin ana faaliyet alanina gore
+# elle hazirlanmis bir haritadir ve Semsiye Portfoy / Sektorel Performans sayfalarinda
+# hisse-sektor eslestirmesi icin kullanilir. Etiketler, mumkun oldugunca
+# tefas_client._THEME_KEYWORDS'un urettigi fon temasi etiketleriyle ayni tutulmustur
+# ki ayni sektor basligi altinda fon + hisse birlikte degerlendirilebilsin.
+STOCK_SECTORS: dict[str, str] = {
+    "GARAN": "Bankacılık / Finans",
+    "AKBNK": "Bankacılık / Finans",
+    "ISCTR": "Bankacılık / Finans",
+    "YKBNK": "Bankacılık / Finans",
+    "VAKBN": "Bankacılık / Finans",
+    "HALKB": "Bankacılık / Finans",
+    "TUPRS": "Enerji",
+    "PETKM": "Enerji",
+    "SASA": "Enerji",
+    "EREGL": "Sanayi",
+    "KRDMD": "Sanayi",
+    "SISE": "Sanayi",
+    "ARCLK": "Sanayi",
+    "VESTL": "Sanayi",
+    "TOASO": "Sanayi",
+    "FROTO": "Sanayi",
+    "THYAO": "Ulaştırma",
+    "PGSUS": "Ulaştırma",
+    "TCELL": "Telekom",
+    "TTKOM": "Telekom",
+    "BIMAS": "Perakende / Gıda",
+    "MGROS": "Perakende / Gıda",
+    "ULKER": "Perakende / Gıda",
+    "ASELS": "Savunma Sanayii",
+    "EKGYO": "Gayrimenkul / İnşaat",
+    "ENKAI": "Gayrimenkul / İnşaat",
+    "KCHOL": "Holding",
+    "SAHOL": "Holding",
+    "DOHOL": "Holding",
+    "KOZAL": "Kıymetli Maden",
+    "LOGO": "Teknoloji",
+    "AYDEM": "Yenilenebilir Enerji",
+    "GWIND": "Yenilenebilir Enerji",
+}
 
 
 def _to_ticker(code: str) -> str:
