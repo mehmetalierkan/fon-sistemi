@@ -169,20 +169,8 @@ def _stock_row(row: pd.Series, sector: str, amount: float, pick_pct: float) -> d
     }
 
 
-def build_umbrella_portfolio(
-    targets: list[tuple[str, float]],
-    budget_tl: float,
-    fund_returns: pd.DataFrame,
-    stock_screen: pd.DataFrame,
-) -> tuple[pd.DataFrame, list[tuple[str, str]]]:
-    """Sektor hedeflerinden 5-10 enstrumanlik semsiye portfoy onerisi uretir.
-
-    targets: (sektor, hedef_yuzde) listesi. Yuzdeler toplami 100 degilse normalize edilir.
-    Donus: (oneri tablosu, [(seviye, mesaj), ...]) - seviye "warning" ya da "info".
-    """
-    notes: list[tuple[str, str]] = []
-
-    # 1) Hedefleri temizle: bos/sifir satirlari at, ayni sektoru birlestir.
+def _normalize_targets(targets: list[tuple[str, float]], notes: list[tuple[str, str]]) -> dict[str, float]:
+    """Bos/sifir satirlari atar, ayni sektoru birlestirir, yuzdeleri %100'e normalize eder."""
     merged: dict[str, float] = {}
     for sector, pct in targets:
         if not sector or pct is None or float(pct) <= 0:
@@ -191,14 +179,15 @@ def build_umbrella_portfolio(
             notes.append(("info", f"'{sector}' birden fazla satırda girildi; yüzdeler toplandı."))
         merged[sector] = merged.get(sector, 0.0) + float(pct)
     if not merged:
-        return pd.DataFrame(), [("warning", "Geçerli bir sektör/yüzde satırı girilmedi.")]
-
+        return {}
     total_pct = sum(merged.values())
     if abs(total_pct - 100.0) > 0.01:
         notes.append(("warning", f"Girilen yüzdelerin toplamı %{total_pct:.1f} idi; otomatik olarak %100'e normalize edildi."))
-    weights = {s: p / total_pct * 100.0 for s, p in merged.items()}
+    return {s: p / total_pct * 100.0 for s, p in merged.items()}
 
-    # 2) Cok fazla sektor girildiyse en yuksek yuzdelileri tut (5-10 oneri siniri icin).
+
+def _cap_sector_count(weights: dict[str, float], notes: list[tuple[str, str]]) -> list[str]:
+    """Cok fazla sektor girildiyse en yuksek yuzdelileri tutar (5-10 oneri siniri icin)."""
     sectors = sorted(weights, key=lambda s: weights[s], reverse=True)
     if len(sectors) > MAX_SEKTOR_SAYISI:
         dropped = sectors[MAX_SEKTOR_SAYISI:]
@@ -208,44 +197,21 @@ def build_umbrella_portfolio(
             f"Toplam öneri sınırı ({MAX_TOPLAM_ONERI}) nedeniyle en yüksek yüzdeli {MAX_SEKTOR_SAYISI} sektör tutuldu; "
             f"şu sektörler çıkarıldı: {', '.join(dropped)}.",
         ))
+    return sectors
 
-    # 3) Her sektor icin aday havuzlari (fon + hisse).
-    reliable = _reliable_funds(fund_returns) if fund_returns is not None and not fund_returns.empty else pd.DataFrame()
-    pools: dict[str, tuple[pd.DataFrame, pd.DataFrame]] = {}
-    for s in sectors:
-        fcand = _fund_candidates(reliable, s) if not reliable.empty else pd.DataFrame()
-        scand = _stock_candidates(stock_screen, s)
-        if fcand.empty and scand.empty:
-            notes.append((
-                "warning",
-                f"'{s}' için güvenilirlik filtresini geçen fon veya izleme listesinde uygun hisse bulunamadı; "
-                "bu sektör portföyden çıkarıldı ve yüzdesi kalan sektörlere dağıtıldı.",
-            ))
-            continue
-        if fcand.empty:
-            if s in STOCK_ONLY_SECTORS:
-                notes.append(("info", f"'{s}' fon adlarından tahmin edilebilen bir tema değil; bu başlıkta yalnızca hisse adayları değerlendirildi."))
-            else:
-                notes.append(("info", f"'{s}' temasında güvenilirlik filtresini geçen fon bulunamadı; yalnızca hisse önerisi sunuluyor."))
-        elif scand.empty:
-            notes.append(("info", f"'{s}' sektöründe izleme listesinde güncel/likit bir BIST hissesi bulunamadı; yalnızca fon önerisi sunuluyor."))
-        pools[s] = (fcand, scand)
 
-    if not pools:
-        return pd.DataFrame(), notes
-
-    active = [s for s in sectors if s in pools]
+def _renormalize(weights: dict[str, float], active: list[str]) -> dict[str, float]:
     subtotal = sum(weights[s] for s in active)
-    weights = {s: weights[s] / subtotal * 100.0 for s in active}
+    if subtotal <= 0:
+        return {s: 0.0 for s in active}
+    return {s: weights[s] / subtotal * 100.0 for s in active}
 
-    # 4) Toplam oneri sayisini 5-10 bandina oturt: hedef = min(10, max(5, 2 x sektor sayisi)).
-    availability = {
-        s: min(len(pools[s][0]) + len(pools[s][1]), MAX_SEKTOR_BASINA_ONERI) for s in active
-    }
+
+def _distribute_counts(active: list[str], weights: dict[str, float], availability: dict[str, int]) -> dict[str, int]:
+    """Toplam oneri sayisini 5-10 bandina oturtur: hedef = min(10, max(5, 2 x sektor sayisi))."""
     target_total = min(MAX_TOPLAM_ONERI, max(MIN_TOPLAM_ONERI, 2 * len(active)))
     target_total = min(target_total, sum(availability.values()))
-
-    counts = {s: 1 for s in active}
+    counts = {s: (1 if availability[s] > 0 else 0) for s in active}
     order = sorted(active, key=lambda s: weights[s], reverse=True)
     while sum(counts.values()) < target_total:
         progressed = False
@@ -257,54 +223,116 @@ def build_umbrella_portfolio(
                 progressed = True
         if not progressed:
             break
+    return counts
 
+
+def build_fund_umbrella_portfolio(
+    targets: list[tuple[str, float]],
+    budget_tl: float,
+    fund_returns: pd.DataFrame,
+) -> tuple[pd.DataFrame, list[tuple[str, str]]]:
+    """Sektor hedeflerinden 5-10 fonluk (yalnizca fon) semsiye portfoy onerisi uretir."""
+    notes: list[tuple[str, str]] = []
+    weights = _normalize_targets(targets, notes)
+    if not weights:
+        return pd.DataFrame(), [("warning", "Geçerli bir sektör/yüzde satırı girilmedi.")]
+
+    sectors = _cap_sector_count(weights, notes)
+    reliable = _reliable_funds(fund_returns) if fund_returns is not None and not fund_returns.empty else pd.DataFrame()
+
+    pools: dict[str, list[dict]] = {}
+    for s in sectors:
+        fcand = _fund_candidates(reliable, s) if not reliable.empty else pd.DataFrame()
+        if fcand.empty:
+            if s in STOCK_ONLY_SECTORS:
+                notes.append(("warning", f"'{s}' fon adlarından tahmin edilebilen bir tema değil; fon şemsiyesinden çıkarıldı."))
+            else:
+                notes.append(("warning", f"'{s}' temasında güvenilirlik filtresini geçen fon bulunamadı; fon şemsiyesinden çıkarıldı."))
+            continue
+        pools[s] = _rank_funds_with_volatility(fcand, shortlist_size=MAX_SEKTOR_BASINA_ONERI)
+
+    if not pools:
+        return pd.DataFrame(), notes
+
+    active = [s for s in sectors if s in pools]
+    weights = _renormalize(weights, active)
+    availability = {s: min(len(pools[s]), MAX_SEKTOR_BASINA_ONERI) for s in active}
+    counts = _distribute_counts(active, weights, availability)
     if sum(counts.values()) < MIN_TOPLAM_ONERI:
         notes.append((
             "warning",
-            f"Uygun aday sayısı sınırlı olduğu için toplam öneri sayısı {sum(counts.values())} ile "
-            f"{MIN_TOPLAM_ONERI}'in altında kaldı.",
+            f"Uygun fon sayısı sınırlı olduğu için toplam fon önerisi {sum(counts.values())} ile {MIN_TOPLAM_ONERI}'in altında kaldı.",
         ))
 
-    # 5) Sektor icinde secim: en iyi fon + en iyi hisse donusumlu (cesitlilik icin),
-    #    fonlar getiri/volatilite oranina, hisseler teknik skora gore sirali.
     rows: list[dict] = []
     used_codes: set[str] = set()
+    order = sorted(active, key=lambda s: weights[s], reverse=True)
     for s in order:
-        fcand, scand = pools[s]
         k = counts[s]
-        fcand = fcand[~fcand["fonKodu"].isin(used_codes)] if not fcand.empty else fcand
-        scand = scand[~scand["kod"].isin(used_codes)] if not scand.empty else scand
-
-        fund_ranked = _rank_funds_with_volatility(fcand, shortlist_size=max(3, k)) if not fcand.empty else []
-        stock_list = [r for _, r in scand.head(k).iterrows()] if not scand.empty else []
-
-        picks: list[tuple[str, object]] = []
-        fi, si = 0, 0
-        turn = "fund" if fund_ranked else "stock"
-        while len(picks) < k and (fi < len(fund_ranked) or si < len(stock_list)):
-            if turn == "fund" and fi < len(fund_ranked):
-                picks.append(("fund", fund_ranked[fi]))
-                fi += 1
-            elif si < len(stock_list):
-                picks.append(("stock", stock_list[si]))
-                si += 1
-            elif fi < len(fund_ranked):
-                picks.append(("fund", fund_ranked[fi]))
-                fi += 1
-            turn = "stock" if turn == "fund" else "fund"
-
-        if not picks:
+        cand = [r for r in pools[s] if r["row"]["fonKodu"] not in used_codes][:k]
+        if not cand:
             continue
         sector_amount = budget_tl * weights[s] / 100.0
-        per_amount = sector_amount / len(picks)
-        pick_pct = weights[s] / len(picks)
-        for kind, item in picks:
-            if kind == "fund":
-                rows.append(_fund_row(item, s, per_amount, pick_pct))
-                used_codes.add(item["row"]["fonKodu"])
-            else:
-                rows.append(_stock_row(item, s, per_amount, pick_pct))
-                used_codes.add(item["kod"])
+        per_amount = sector_amount / len(cand)
+        pick_pct = weights[s] / len(cand)
+        for rec in cand:
+            rows.append(_fund_row(rec, s, per_amount, pick_pct))
+            used_codes.add(rec["row"]["fonKodu"])
+
+    result = pd.DataFrame(rows)
+    if not result.empty:
+        result = result.sort_values(["hedef_pct", "sektor"], ascending=[False, True]).reset_index(drop=True)
+    return result, notes
+
+
+def build_stock_umbrella_portfolio(
+    targets: list[tuple[str, float]],
+    budget_tl: float,
+    stock_screen: pd.DataFrame,
+) -> tuple[pd.DataFrame, list[tuple[str, str]]]:
+    """Sektor hedeflerinden 5-10 hisselik (yalnizca hisse) semsiye portfoy onerisi uretir."""
+    notes: list[tuple[str, str]] = []
+    weights = _normalize_targets(targets, notes)
+    if not weights:
+        return pd.DataFrame(), [("warning", "Geçerli bir sektör/yüzde satırı girilmedi.")]
+
+    sectors = _cap_sector_count(weights, notes)
+
+    pools: dict[str, list[pd.Series]] = {}
+    for s in sectors:
+        scand = _stock_candidates(stock_screen, s)
+        if scand.empty:
+            notes.append(("warning", f"'{s}' sektöründe izleme listesinde güncel/likit bir BIST hissesi bulunamadı; hisse şemsiyesinden çıkarıldı."))
+            continue
+        pools[s] = [r for _, r in scand.head(MAX_SEKTOR_BASINA_ONERI).iterrows()]
+
+    if not pools:
+        return pd.DataFrame(), notes
+
+    active = [s for s in sectors if s in pools]
+    weights = _renormalize(weights, active)
+    availability = {s: min(len(pools[s]), MAX_SEKTOR_BASINA_ONERI) for s in active}
+    counts = _distribute_counts(active, weights, availability)
+    if sum(counts.values()) < MIN_TOPLAM_ONERI:
+        notes.append((
+            "warning",
+            f"Uygun hisse sayısı sınırlı olduğu için toplam hisse önerisi {sum(counts.values())} ile {MIN_TOPLAM_ONERI}'in altında kaldı.",
+        ))
+
+    rows: list[dict] = []
+    used_codes: set[str] = set()
+    order = sorted(active, key=lambda s: weights[s], reverse=True)
+    for s in order:
+        k = counts[s]
+        cand = [r for r in pools[s] if r["kod"] not in used_codes][:k]
+        if not cand:
+            continue
+        sector_amount = budget_tl * weights[s] / 100.0
+        per_amount = sector_amount / len(cand)
+        pick_pct = weights[s] / len(cand)
+        for row in cand:
+            rows.append(_stock_row(row, s, per_amount, pick_pct))
+            used_codes.add(row["kod"])
 
     result = pd.DataFrame(rows)
     if not result.empty:

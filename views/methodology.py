@@ -122,10 +122,16 @@ st.markdown(
 st.divider()
 st.markdown("## 🌂 Şemsiye Portföy Oluşturucu Kriterleri")
 
-st.markdown("#### 1) Sektör/tema eşleştirme kaynakları")
+st.markdown("#### 1) Fon ve hisse şemsiyeleri AYRI oluşturulur")
 st.markdown(
     """
-Girdiğiniz her sektör/tema başlığı için iki aday havuzu oluşturulur:
+Girdiğiniz sektör/tema dağılımı **ortak** bir girdidir, ama sonuçta **iki bağımsız portföy** üretilir —
+kendi bütçesi, kendi 5-10 enstrüman kısıtı ve kendi tablosu olan bir **Fon Şemsiyesi** ve bir **Hisse
+Şemsiyesi**. Fon bütçesi varsayılan olarak Portföyüm'deki Haftalık Fon Kasası bakiyenizden, hisse bütçesi
+Günlük İşlem Kasası bakiyenizden gelir (isterseniz değiştirebilirsiniz) — bu, sistemin zaten takip ettiği
+iki ayrı kasa mantığıyla birebir uyumludur.
+
+Her sektör/tema başlığı için iki ayrı aday havuzu değerlendirilir:
 
 - **Fonlar**: Fonun **unvanındaki anahtar kelimelerden** tahmin edilen tema etiketi kullanılır
   (Haftalık Fon Analizi'ndeki Sektör/Tema etiketiyle aynı mekanizma). *Yenilenebilir Enerji* seçilirse
@@ -137,8 +143,8 @@ Girdiğiniz her sektör/tema başlığı için iki aday havuzu oluşturulur:
 **Önemli sınır:** Fon eşleşmesi isim bazlı bir **tahmindir** — TEFAS'ın ücretsiz API'si fonun gerçek
 portföyündeki sektörel dağılımı vermez. Hisse eşleşmesi de resmi bir sınıflandırma değil, elle atanmış
 bir haritadır. *Ulaştırma*, *Telekom* ve *Holding* başlıkları fon adlarından tahmin edilemediği için bu
-başlıklarda yalnızca hisse önerilir; bir başlıkta uygun/likit hisse yoksa yalnızca fon önerilir ve bu
-durum size açıkça bildirilir.
+başlıklarda Fon Şemsiyesi'nde öneri çıkmaz (yalnızca Hisse Şemsiyesi'nde); bir başlıkta uygun/likit hisse
+yoksa Hisse Şemsiyesi'nde o başlık boş kalır — her iki durum da açıkça bildirilir.
 """
 )
 
@@ -154,23 +160,25 @@ Hiç adayı bulunamayan bir sektör portföyden çıkarılır ve yüzdesi kalan 
 st.markdown("#### 3) Aday seçimi ve skorlar")
 st.markdown(
     """
-Her sektör içinde adaylar mevcut sayfaların skorlama mantığıyla sıralanır:
+Her sektör içinde, kendi türünün adayları mevcut sayfaların skorlama mantığıyla sıralanır:
 
-- **Fonlar**: Önce güvenilirlik filtresi uygulanır (büyüklük ≥ 10 mn TL, yatırımcı ≥ 20, anomali
+- **Fon Şemsiyesi**: Önce güvenilirlik filtresi uygulanır (büyüklük ≥ 10 mn TL, yatırımcı ≥ 20, anomali
   getiriler hariç — Haftalık Fon Analizi ile aynı). Ardından en yüksek getirili adayların 3 aylık
   volatilitesi hesaplanıp **getiri ÷ volatilite** oranına göre sıralanır.
-- **Hisseler**: Günlük İşlem Analizi'ndeki **teknik skor** kullanılır (trend + RSI + hacim + momentum).
+- **Hisse Şemsiyesi**: Günlük İşlem Analizi'ndeki **teknik skor** kullanılır (trend + RSI + hacim +
+  momentum).
 
-Sektör içinde birden fazla öneri gerekiyorsa çeşitlilik için **en iyi fon ile en iyi hisse dönüşümlü**
-seçilir; yalnızca tek tür aday varsa o türün en iyileri alınır. Aynı enstrüman iki sektörde birden önerilmez.
+Sektör içinde birden fazla öneri gerekiyorsa o türün en iyilerinden sırayla alınır. Aynı enstrüman aynı
+şemsiye içinde iki sektörde birden önerilmez.
 """
 )
 
 st.markdown("#### 4) 5–10 öneri kısıtı")
 st.markdown(
     """
-Toplam öneri sayısı her zaman **5 ile 10 arasında** tutulur. Hedef sayı `2 × sektör sayısı` olarak
-başlar ve 5–10 bandına sıkıştırılır:
+Fon Şemsiyesi ve Hisse Şemsiyesi **her biri kendi içinde** 5 ile 10 enstrüman arasında tutulur (biri 7
+fon, diğeri 9 hisse önerebilir — bağımsız hesaplanır). Hedef sayı `2 × sektör sayısı` olarak başlar ve
+5–10 bandına sıkıştırılır:
 
 - **10'dan fazla sektör** girilirse en yüksek yüzdeli 10 sektör tutulur, kalanlar uyarıyla çıkarılır.
 - **1–2 sektör** girilirse her sektörden birden fazla enstrüman (sektör başına en fazla 5) alınarak
