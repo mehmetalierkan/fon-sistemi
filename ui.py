@@ -3,6 +3,16 @@ import streamlit as st
 
 _CSS = """
 <style>
+/* --- Genel sayfa zemini: artik duz beyaz degil, hafif renkli gradient --- */
+[data-testid="stAppViewContainer"],
+[data-testid="stMain"],
+.main {
+    background: linear-gradient(160deg, #FAF5FF 0%, #FDF2F8 45%, #FFF9F2 100%) !important;
+}
+[data-testid="stHeader"] {
+    background: transparent !important;
+}
+
 /* --- Sidebar: canli mor-pembe gradient, ikonlu nav --- */
 [data-testid="stSidebar"] {
     background: linear-gradient(180deg, #7C3AED 0%, #5B21B6 55%, #3B0764 100%);
@@ -39,15 +49,75 @@ _CSS = """
 
 /* --- Metric kartlari --- */
 [data-testid="stMetric"] {
-    background: linear-gradient(135deg, #F5F3FF 0%, #FFFFFF 100%);
-    border: 1px solid #E9D5FF;
-    border-radius: 16px;
-    padding: 14px 18px;
-    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.10);
+    background: linear-gradient(135deg, #F3E8FF 0%, #FDF2F8 100%);
+    border: 1.5px solid #A78BFA;
+    border-top: 5px solid #7C3AED;
+    border-radius: 14px;
+    padding: 16px 18px;
+    box-shadow: 0 6px 18px rgba(124, 58, 237, 0.20);
 }
 [data-testid="stMetricLabel"] {
     font-weight: 600;
     color: #6D28D9 !important;
+}
+[data-testid="stMetricValue"] {
+    color: #3B0764 !important;
+}
+
+/* --- Basliklar (subheader/header) - renkli sol serit + hafif zemin --- */
+[data-testid="stMain"] h2,
+[data-testid="stMain"] h3 {
+    border-left: 5px solid #7C3AED;
+    padding: 4px 0 4px 14px;
+    background: linear-gradient(90deg, rgba(124, 58, 237, 0.10), rgba(124, 58, 237, 0) 80%);
+    border-radius: 6px;
+}
+
+/* --- Girdi kutulari (selectbox/number/text/date) - renkli kenarlik --- */
+[data-testid="stSelectbox"] [role="group"],
+[data-testid="stNumberInputContainer"],
+[data-testid="stTextInput"] [role="group"],
+[data-testid="stDateInput"] [role="group"],
+[data-testid="stTextArea"] [role="group"] {
+    border: 2px solid #A78BFA !important;
+    border-radius: 10px !important;
+    background-color: #FDFBFF !important;
+}
+[data-testid="stSelectbox"] [role="group"]:focus-within,
+[data-testid="stNumberInputContainer"]:focus-within,
+[data-testid="stTextInput"] [role="group"]:focus-within,
+[data-testid="stDateInput"] [role="group"]:focus-within {
+    border-color: #7C3AED !important;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.18) !important;
+}
+
+/* --- Ayirici cizgiler --- */
+[data-testid="stMain"] hr {
+    height: 3px !important;
+    border: none !important;
+    background: linear-gradient(90deg, #7C3AED, #EC4899, #F97316) !important;
+    opacity: 0.55;
+    border-radius: 3px;
+}
+
+/* --- Expander kutulari --- */
+[data-testid="stExpander"] {
+    border: 1px solid #E9D5FF !important;
+    border-radius: 14px !important;
+    background: linear-gradient(135deg, #FDFBFF, #FFF7FB) !important;
+    box-shadow: 0 3px 10px rgba(124, 58, 237, 0.08);
+}
+
+/* --- Dataframe cercevesi --- */
+[data-testid="stDataFrame"] {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #E9D5FF;
+}
+
+/* --- Uyari/bilgi kutulari --- */
+[data-testid="stAlert"] {
+    border-radius: 12px;
 }
 
 /* --- Butonlar --- */
@@ -100,10 +170,6 @@ _CSS = """
     border-radius: 10px;
 }
 
-/* --- Uyari/bilgi kutulari daha yuvarlak --- */
-[data-testid="stAlert"] {
-    border-radius: 12px;
-}
 </style>
 """
 
