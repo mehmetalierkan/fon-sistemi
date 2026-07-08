@@ -11,15 +11,18 @@ gradient_title("Haftalık Fon Analizi", "📈")
 st.caption(
     "TEFAS'ın herkese açık verileriyle hesaplanır. Not: TEFAS'ın ücretsiz API'si fonun *varlık sınıfı* "
     "dağılımını (hisse senedi/tahvil/döviz vb. yüzdeleri) verir; fon içindeki spesifik hisse senedi "
-    "isimlerini/ağırlıklarını vermez. Kriterlerin tam açıklaması için sol menüden "
-    "**🧭 Nasıl Değerlendiriyoruz?** sayfasına bakabilirsiniz."
+    "isimlerini/ağırlıklarını vermez. **Sektör/Tema** filtresi fonun adından tahmin edilir (ör. 'Amerika "
+    "Hisse Senedi Fonu' → Amerika), TEFAS'tan gelen kesin bir sektör verisi değildir. Kriterlerin tam "
+    "açıklaması için sol menüden **🧭 Nasıl Değerlendiriyoruz?** sayfasına bakabilirsiniz."
 )
 
 
 @st.cache_data(ttl=3600, show_spinner="TEFAS'tan fon verileri çekiliyor (birkaç dakika sürebilir)...")
-def _load(fon_tipi: str, kategori: str, top_n: int, as_of_str: str):
+def _load(fon_tipi: str, kategori: str, tema: str, top_n: int, as_of_str: str):
     as_of = dt.date.fromisoformat(as_of_str)
-    return fund_analysis.build_fund_comparison(fon_tipi=fon_tipi, kategori=kategori, top_n=top_n, as_of=as_of)
+    return fund_analysis.build_fund_comparison(
+        fon_tipi=fon_tipi, kategori=kategori, tema=tema, top_n=top_n, as_of=as_of
+    )
 
 
 @st.cache_data(ttl=3600, show_spinner="Fon detayı yükleniyor...")
@@ -36,7 +39,15 @@ def _pie(breakdown, title, key=None):
     st.plotly_chart(fig, width="stretch", key=key)
 
 
-col_a, col_b, col_c, col_d = st.columns([1, 1, 1, 1])
+THEME_OPTIONS = [
+    "Tümü", "Genel / Karma", "Amerika Hisse Senedi", "Avrupa Hisse Senedi", "Asya Hisse Senedi",
+    "Çin Hisse Senedi", "Hindistan Hisse Senedi", "Japonya Hisse Senedi", "Küresel / Yabancı",
+    "Bankacılık / Finans", "Teknoloji", "Sanayi", "Enerji", "Sağlık", "Gayrimenkul / İnşaat",
+    "Tarım / Gıda", "Savunma Sanayii", "Temettü Odaklı", "Sürdürülebilirlik / ESG",
+    "Kıymetli Maden", "Endeks (BIST)", "Girişim Sermayesi", "Katılım / Faizsiz",
+]
+
+col_a, col_b, col_c, col_d, col_e = st.columns([1, 1, 1, 0.8, 1])
 with col_a:
     fon_tipi = st.selectbox("Fon Tipi", ["YAT", "EMK", "BYF"], index=0, help="YAT: Yatırım Fonu, EMK: Emeklilik Fonu, BYF: Borsa Yatırım Fonu")
 with col_b:
@@ -46,8 +57,15 @@ with col_b:
         index=0,
     )
 with col_c:
-    top_n = st.number_input("Kaç öneri gösterilsin?", min_value=3, max_value=30, value=10)
+    tema = st.selectbox(
+        "Sektör / Tema",
+        THEME_OPTIONS,
+        index=0,
+        help="Fon adından tahmin edilen sektör/tema odağı - TEFAS'ın kesin bir sektör verisi yok, bu bir isim bazlı tahmindir.",
+    )
 with col_d:
+    top_n = st.number_input("Kaç öneri?", min_value=3, max_value=30, value=10)
+with col_e:
     st.write("")
     st.write("")
     if st.button("🔄 Verileri Yenile"):
@@ -57,7 +75,7 @@ with col_d:
 as_of = dt.date.today()
 
 try:
-    returns_df, recommendations = _load(fon_tipi, kategori, int(top_n), as_of.isoformat())
+    returns_df, recommendations = _load(fon_tipi, kategori, tema, int(top_n), as_of.isoformat())
 except Exception as exc:
     st.error(f"TEFAS verisi çekilirken hata oluştu: {exc}")
     st.stop()
@@ -70,7 +88,8 @@ st.subheader(f"Öne Çıkan {len(recommendations)} Fon Önerisi")
 st.caption("Sıralama: getiri / volatilite oranına göre (yüksek getiri + düşük risk = üstte).")
 
 for rec in recommendations:
-    with st.expander(f"**{rec['fonKodu']}** — {rec['fonUnvan']} ({rec['kategori']})", expanded=False):
+    tema_etiket = f" · {rec['tema']}" if rec.get("tema") and rec["tema"] != "Genel / Karma" else ""
+    with st.expander(f"**{rec['fonKodu']}** — {rec['fonUnvan']} ({rec['kategori']}{tema_etiket})", expanded=False):
         m1, m2, m3, m4 = st.columns(4)
         m1.metric("1 Hafta", f"%{rec['getiri_1h']:.1f}" if rec['getiri_1h'] == rec['getiri_1h'] else "-")
         m2.metric("1 Ay", f"%{rec['getiri_1a']:.1f}" if rec['getiri_1a'] == rec['getiri_1a'] else "-")
@@ -83,7 +102,7 @@ for rec in recommendations:
 st.divider()
 st.subheader("Tüm Fon Karşılaştırma Tablosu")
 display_cols = [
-    "fonKodu", "fonUnvan", "kategori", "getiri_1h", "getiri_1a", "getiri_3a", "getiri_6a",
+    "fonKodu", "fonUnvan", "kategori", "tema", "getiri_1h", "getiri_1a", "getiri_3a", "getiri_6a",
     "yillik_volatilite_pct", "kategori_persentil_1a",
 ]
 st.dataframe(

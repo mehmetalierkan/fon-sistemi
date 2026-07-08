@@ -105,6 +105,60 @@ def categorize_fund(fon_unvan: str) -> str:
     return "Diğer"
 
 
+# Fon unvanindan sektor/tema tahmini (TEFAS'in kategori alanindan bagimsiz, ek bir kirilim).
+# Bu bir ISIM BAZLI HEURISTIK'tir - fonun gercek portfoy icerigindeki sektor agirliklarini
+# YANSITMAZ (TEFAS ücretsiz API'si bu veriyi vermiyor). Sadece fonun adindan/odaklandigi
+# alandan kaba bir tema tahmini yapar. Sira onemlidir: daha spesifik anahtar kelimeler once.
+_THEME_KEYWORDS: list[tuple[str, str]] = [
+    ("AMERİKA", "Amerika Hisse Senedi"),
+    ("AVRUPA", "Avrupa Hisse Senedi"),
+    ("ASYA", "Asya Hisse Senedi"),
+    ("ÇİN", "Çin Hisse Senedi"),
+    ("HİNDİSTAN", "Hindistan Hisse Senedi"),
+    ("JAPONYA", "Japonya Hisse Senedi"),
+    ("ULUSLARARASI", "Küresel / Yabancı"),
+    ("YABANCI", "Küresel / Yabancı"),
+    ("GLOBAL", "Küresel / Yabancı"),
+    ("DÜNYA", "Küresel / Yabancı"),
+    ("BANKACILIK", "Bankacılık / Finans"),
+    ("FİNANS", "Bankacılık / Finans"),
+    ("TEKNOLOJİ", "Teknoloji"),
+    ("BİLİŞİM", "Teknoloji"),
+    ("YAZILIM", "Teknoloji"),
+    ("SANAYİ", "Sanayi"),
+    ("METAL", "Sanayi"),
+    ("DEMİR ÇELİK", "Sanayi"),
+    ("ENERJİ", "Enerji"),
+    ("PETROL", "Enerji"),
+    ("PETROKİMYA", "Enerji"),
+    ("SAĞLIK", "Sağlık"),
+    ("İLAÇ", "Sağlık"),
+    ("GAYRİMENKUL", "Gayrimenkul / İnşaat"),
+    ("İNŞAAT", "Gayrimenkul / İnşaat"),
+    ("TARIM", "Tarım / Gıda"),
+    ("GIDA", "Tarım / Gıda"),
+    ("SAVUNMA", "Savunma Sanayii"),
+    ("TEMETTÜ", "Temettü Odaklı"),
+    ("SÜRDÜRÜLEBİLİR", "Sürdürülebilirlik / ESG"),
+    ("ESG", "Sürdürülebilirlik / ESG"),
+    ("ALTIN", "Kıymetli Maden"),
+    ("KIYMETLİ MADEN", "Kıymetli Maden"),
+    ("BIST", "Endeks (BIST)"),
+    ("ENDEKS", "Endeks (BIST)"),
+    ("GİRİŞİM SERMAYESİ", "Girişim Sermayesi"),
+    ("KATILIM", "Katılım / Faizsiz"),
+]
+
+
+def categorize_theme(fon_unvan: str) -> str:
+    """Fon adindan kaba bir sektor/tema tahmini. Kesin degildir, TEFAS'ta bu veri yok - bkz. fonksiyon ustundeki not."""
+    unvan = (fon_unvan or "").upper()
+    for keyword, theme in _THEME_KEYWORDS:
+        if keyword in unvan:
+            return theme
+    return "Genel / Karma"
+
+
 def _post(endpoint: str, payload: dict) -> list[dict]:
     resp = requests.post(f"{BASE_URL}/{endpoint}", json=payload, headers=HEADERS, timeout=25)
     resp.raise_for_status()
@@ -184,6 +238,7 @@ def get_universe_returns(as_of: dt.date | None = None, fon_tipi: str = "YAT") ->
         merged = merged.drop(columns=["_fiyat_gecmis"])
 
     merged["kategori"] = merged["fonUnvan"].map(categorize_fund)
+    merged["tema"] = merged["fonUnvan"].map(categorize_theme)
     return merged
 
 

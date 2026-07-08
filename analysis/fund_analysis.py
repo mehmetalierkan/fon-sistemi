@@ -17,6 +17,7 @@ MAX_MAKUL_GETIRI_PCT = 100.0  # bu esigin uzerindeki donemsel getiriler supheli/
 def build_fund_comparison(
     fon_tipi: str = "YAT",
     kategori: str | None = None,
+    tema: str | None = None,
     top_n: int = 15,
     as_of: dt.date | None = None,
     volatility_shortlist_size: int = 30,
@@ -28,6 +29,8 @@ def build_fund_comparison(
 
     if kategori and kategori != "Tümü":
         returns_df = returns_df[returns_df["kategori"] == kategori].copy()
+    if tema and tema != "Tümü":
+        returns_df = returns_df[returns_df["tema"] == tema].copy()
 
     # Kucuk/yeni/dusuk likiditeli fonlarda gorulen anormal getiri sicramalarini disla.
     guvenilir = (
@@ -80,6 +83,7 @@ def build_fund_comparison(
                 "fonKodu": row["fonKodu"],
                 "fonUnvan": row["fonUnvan"],
                 "kategori": row["kategori"],
+                "tema": row["tema"],
                 "getiri_1h": row["getiri_1h"],
                 "getiri_1a": row["getiri_1a"],
                 "getiri_3a": row["getiri_3a"],
@@ -102,6 +106,8 @@ def _build_rationale(row: pd.Series, breakdown: list[tuple[str, float]]) -> str:
             f"'{row['kategori']}' kategorisinde son 1 aylık getirisiyle fonların "
             f"%{row['kategori_persentil_1a']:.0f}'inden daha iyi performans gösterdi."
         )
+    if row.get("tema") and row["tema"] != "Genel / Karma":
+        parts.append(f"Sektör/tema odağı (fon adından tahmini): {row['tema']}.")
     if pd.notna(row.get("yillik_volatilite_pct")):
         parts.append(f"Yıllık volatilitesi yaklaşık %{row['yillik_volatilite_pct']:.1f}.")
     if breakdown:

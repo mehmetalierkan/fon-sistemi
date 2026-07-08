@@ -45,7 +45,24 @@ karşılaştırılıp bir persentil (yüzdelik dilim) hesaplanır — "%92'sinde
 """
 )
 
-st.markdown("#### 5) Varlık dağılımı")
+st.markdown("#### 5) Sektör / Tema (şemsiye) etiketi")
+st.markdown(
+    """
+Kategorinin yanında, fonun **hangi sektöre/temaya odaklandığına** dair ek bir etiket daha
+gösterilir (ör. Bankacılık/Finans, Teknoloji, Enerji, Amerika Hisse Senedi, Küresel/Yabancı, Sağlık,
+Gayrimenkul/İnşaat, Temettü Odaklı, Sürdürülebilirlik/ESG vb.). Bu etiket sayesinde farklı sektörlere
+dağıtılmış bir **şemsiye portföy** kurgulayabilir, aynı sektöre aşırı yüklenip yüklenmediğinizi
+görebilirsiniz.
+
+**Önemli sınır:** Bu etiket **fon unvanındaki anahtar kelimelerden** tahmin edilir (ör. "AK PORTFÖY
+AMERİKA YABANCI HİSSE SENEDİ FONU" → *Amerika Hisse Senedi*). TEFAS'ın ücretsiz API'si fonun gerçek
+portföyündeki sektörel dağılımı vermez — bu yüzden fon adı sektörünü açıkça belirtmiyorsa etiket
+"Genel / Karma" olarak görünür ve bu, fonun sektörsüz olduğu anlamına gelmez, sadece isimden tahmin
+edilemediği anlamına gelir.
+"""
+)
+
+st.markdown("#### 6) Varlık dağılımı")
 st.markdown(
     """
 TEFAS'ın herkese açık API'si her fon için **varlık sınıfı bazında** dağılım verir: %hisse senedi,
@@ -58,7 +75,7 @@ bültenlerinde bulunur ve fon bazında formatı farklı olduğu için sistematik
 """
 )
 
-st.markdown("#### 6) Güvenilirlik filtresi (veri anomalisi koruması)")
+st.markdown("#### 7) Güvenilirlik filtresi (veri anomalisi koruması)")
 st.markdown(
     """
 Küçük/yeni/düşük likiditeli fonlarda bazen gerçekçi olmayan getiri sıçramaları görülür (ör. tek bir
