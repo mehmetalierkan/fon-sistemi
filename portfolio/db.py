@@ -202,3 +202,9 @@ def get_portfolio_summary(bucket: str, price_lookup: Callable[[str], float | Non
         "toplam_deger": balance + total_market_value,
         "pozisyonlar": enriched,
     }
+
+
+# Semayi ilk import eden sayfa Ana Sayfa/Portfoyum olmayabilir (ör. dogrudan Semsiye Portfoy
+# Olusturucu'ya girilirse); bu yuzden semayi her sayfanin hatirlamasina guvenmek yerine modul
+# import edilir edilmez bir kere kurulur (init_db idempotenttir, tekrar cagrilmasi zararsizdir).
+init_db()
