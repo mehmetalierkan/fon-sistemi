@@ -5,7 +5,7 @@ import plotly.express as px
 import streamlit as st
 
 from analysis import fund_analysis
-from ui import CHART_COLORS, cap_categories, gradient_title
+from ui import CHART_COLORS, cap_categories, gradient_title, recommendation_faq
 
 gradient_title("Haftalık Fon Analizi", "📈")
 st.caption(
@@ -15,6 +15,19 @@ st.caption(
     "Hisse Senedi Fonu' → Amerika), TEFAS'tan gelen kesin bir sektör verisi değildir."
 )
 st.page_link("views/methodology.py", label="🧭 Kriterlerin tam açıklaması için Nasıl Değerlendiriyoruz? sayfasına gidin", icon="🧭")
+recommendation_faq(
+    neden=(
+        "TEFAS'ta işlem gören yüzlerce fonu manuel karşılaştırmak yerine, bu sayfa güvenilirlik "
+        "filtresinden geçen fonları getiri/risk dengesine (getiri ÷ volatilite) göre otomatik sıralar "
+        "ve haftalık karar sürecinizi hızlandırmak için tasarlanmıştır. Bu bir kesin alım talimatı "
+        "değildir; hangi fonlara daha yakından bakmanız gerektiğine dair bir başlangıç noktasıdır."
+    ),
+    sure=(
+        "Fon getirileri günlük NAV üzerinden hesaplanır; bu yüzden fon önerileri haftalık/aylık "
+        "ufuklu bir değerlendirmedir (BIST/ABD hisse sayfalarındaki günlük teknik sinyallerden daha "
+        "yavaş değişir). Her Pazartesi güncel verilerle tekrar değerlendirilmesi önerilir."
+    ),
+)
 
 
 @st.cache_data(ttl=3600, show_spinner="TEFAS'tan fon verileri çekiliyor (birkaç dakika sürebilir)...")

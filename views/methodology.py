@@ -144,6 +144,31 @@ bölümünde de aynı açıklama yer alır.
 st.divider()
 st.markdown("## 🌂 Şemsiye Portföy Oluşturucu Kriterleri")
 
+st.markdown("#### 0) Sektör Önerisi Sihirbazı (soru-cevapla hedef belirleme)")
+st.markdown(
+    """
+Hangi sektörlere/temalara ne kadar pay ayıracağınıza karar veremiyorsanız, hedef tablonun üstündeki
+**"🧙 Sektör Hedeflerini Belirlemekte Zorlanıyor musunuz?"** bölümünü açıp şu soruları cevaplayabilirsiniz:
+
+- **İlgilendiğiniz sektör/temalar** (çoklu seçim) — öneri SADECE burada seçtiğiniz sektörler arasında
+  dağıtılır, seçmediğiniz bir sektör asla önerilmez.
+- **Yatırım vadeniz** (Kısa / Orta / Uzun vadeli)
+- **Risk toleransınız** (Düşük / Orta / Yüksek)
+- **Önceliğiniz** (İstikrar / Dengeli / Büyüme)
+
+Sistem bu 3 cevaptan **1.0 (düşük risk) - 3.0 (yüksek risk)** ölçeğinde bir "hedef risk seviyesi"
+hesaplar. Her sektöre önceden atanmış kabaca bir risk/oynaklık etiketi vardır (ör. Teknoloji/Yenilenebilir
+Enerji/Girişim Sermayesi = Yüksek; Kıymetli Maden/Temettü Odaklı/Telekom = Düşük; çoğu diğer sektör =
+Orta). Seçtiğiniz sektörlerden, risk etiketi hedef seviyenize **daha yakın olanlar orantılı olarak daha
+fazla pay** alır — ama seçtiğiniz hiçbir sektör tamamen elenmez. Sonuç otomatik olarak aşağıdaki tabloyu
+doldurur; oradan dilediğiniz gibi düzenlemeye devam edebilirsiniz.
+
+**Önemli sınır:** Bu, kişiselleştirilmiş bir finansal tavsiye motoru değildir — sabit, şeffaf bir kural
+tabanlı eşleştirmedir (risk etiketi + cevaplarınız → ağırlık). Sektör risk etiketleri kabaca bir
+genellemedir, her fonun/hissenin gerçek riskini yansıtmayabilir.
+"""
+)
+
 st.markdown("#### 1) Fon ve hisse şemsiyeleri AYRI oluşturulur")
 st.markdown(
     """
@@ -318,9 +343,10 @@ st.markdown(
     """
 Ana sayfadaki Fonlar / BIST Hisseleri / ABD Hisseleri / Döviz-Altın sekmeleri, **yeni bir kriter
 üretmez** — her biri kendi sayfasındaki sıralamanın ilk 3 sonucunu gösterir (yukarıdaki ilgili bölümlere
-bakın); ana sayfada sadece güncel nakit bakiyeler salt-okunur olarak gösterilir.
+bakın).
 
-**Bütçeler artık sadece Portföyüm sayfasında düzenlenir.** Her kasanın (Haftalık Fon / Günlük İşlem)
+**Bütçeler sadece Portföyüm sayfasında gösterilir ve düzenlenir** (ana sayfada artık bütçe bilgisi yok,
+tekrar bilgi göstermenin bir anlamı olmadığı için kaldırıldı). Her kasanın (Haftalık Fon / Günlük İşlem)
 altındaki **"🎯 Nakit Bütçeyi Güncelle"** bölümünden bakiyeyi doğrudan değiştirebilirsiniz; bu değer,
 diğer tüm sayfalardaki (Günlük İşlem Analizi, ABD Borsası, Şemsiye Portföy Oluşturucu) varsayılan bütçe
 olarak otomatik kullanılır — o sayfalarda ayrıca bir bütçe girişi yoktur, çünkü aynı bilginin birden

@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from data import analyst_client, global_client as gc, stock_client as sc
-from ui import gradient_title
+from ui import gradient_title, recommendation_faq
 
 gradient_title("Analist Önerileri", "🏛️")
 st.caption(
@@ -17,6 +17,21 @@ st.caption(
     "olmayabilir; bu durumda hisse tabloda görünmez."
 )
 st.page_link("views/methodology.py", label="🧭 Kriterlerin tam açıklaması için Nasıl Değerlendiriyoruz? sayfasına gidin", icon="🧭")
+recommendation_faq(
+    neden=(
+        "Bu sayfa kendi teknik taramamızın dışında, gerçek yatırım kuruluşlarının (bankalar, aracı "
+        "kurumlar) profesyonel analistlerinin görüşünü tek bir yerde toplar; böylece kendi teknik "
+        "sinyallerinizi bağımsız bir profesyonel görüşle karşılaştırabilirsiniz. Analistlerin al/sat "
+        "önerisi vermesinin sebebi kendi finansal modelleri, şirket görüşmeleri ve sektör "
+        "analizleridir — bizim teknik skorlarımızdan tamamen ayrı bir değerlendirmedir."
+    ),
+    sure=(
+        "Analist hedef fiyatları tipik olarak **12 aylık** bir ufku yansıtır — bu, teknik tarama "
+        "sayfalarındaki günlük/haftalık sinyallerden çok daha uzun vadelidir ve genellikle çeyreklik "
+        "bilanço dönemlerinde güncellenir. Kısa vadeli alım-satım kararları için tek başına yeterli "
+        "değildir."
+    ),
+)
 
 if st.button("🔄 Verileri Yenile"):
     st.cache_data.clear()

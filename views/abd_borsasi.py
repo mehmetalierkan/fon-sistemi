@@ -5,7 +5,7 @@ import streamlit as st
 from analysis import daily_screener
 from data import global_client as gc
 from portfolio import db
-from ui import gradient_title
+from ui import gradient_title, recommendation_faq
 
 gradient_title("ABD Borsası", "🇺🇸")
 st.caption(
@@ -14,6 +14,18 @@ st.caption(
     "fiyatların USD cinsinden olmasıdır."
 )
 st.page_link("views/methodology.py", label="🧭 Kriterlerin tam açıklaması için Nasıl Değerlendiriyoruz? sayfasına gidin", icon="🧭")
+recommendation_faq(
+    neden=(
+        "Yüzlerce ABD hissesini tek tek incelemek yerine, bu sayfa Günlük İşlem Analizi ile birebir "
+        "aynı şeffaf kriterlere göre puanlama yaparak size bir başlangıç noktası sunar. Kesin bir "
+        "alım-satım emri değildir; dikkatinizi nereye yönlendireceğinize dair bir öneridir."
+    ),
+    sure=(
+        "Kısa vadelidir (birkaç gün - 2-3 hafta); bileşenler (RSI, hacim, momentum) hızla "
+        "değişebileceğinden sayfayı düzenli yenileyin. Şirket haberleri/bilanço gibi temel "
+        "gelişmeler bu skora dahil değildir."
+    ),
+)
 
 
 @st.cache_data(ttl=900, show_spinner=False)

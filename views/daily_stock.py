@@ -5,11 +5,26 @@ import streamlit as st
 from analysis import daily_screener
 from data import stock_client
 from portfolio import db
-from ui import gradient_title
+from ui import gradient_title, recommendation_faq
 
 gradient_title("Günlük İşlem Analizi (Midas — BIST Hisse)", "⚡")
 st.caption("Serbestçe düzenlenebilir bir izleme listesindeki likit BIST hisseleri için teknik tarama.")
 st.page_link("views/methodology.py", label="🧭 Kriterlerin tam açıklaması için Nasıl Değerlendiriyoruz? sayfasına gidin", icon="🧭")
+recommendation_faq(
+    neden=(
+        "Yüzlerce BIST hissesini tek tek incelemek yerine, bu sayfa sabit ve şeffaf kriterlere "
+        "(trend, RSI, hacim, momentum) dayalı bir puanlama ile 'bugün hangi hisseye bakmalıyım' "
+        "sorusuna hızlı bir başlangıç noktası sunar. Bu bir kesin alım-satım emri değildir — "
+        "dikkatinizi nereye yönlendireceğinize dair bir öneridir, nihai karar ve araştırma "
+        "sorumluluğu size aittir."
+    ),
+    sure=(
+        "Kısa vadelidir: RSI, hacim ve momentum gibi bileşenler gün içinde hızla değişebileceğinden "
+        "sinyal tipik olarak birkaç gün ile 2-3 hafta arasında anlamlıdır. Sayfayı düzenli (idealde "
+        "her gün) yenileyerek güncel tutun; şirket haberleri/bilanço gibi temel gelişmeler bu skora "
+        "dahil değildir."
+    ),
+)
 
 budget = db.get_balance("DAILY")
 col_a, col_b = st.columns([1, 3])

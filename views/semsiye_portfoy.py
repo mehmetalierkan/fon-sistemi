@@ -52,8 +52,42 @@ _DEFAULT_TARGETS = pd.DataFrame(
         {"Sektör / Tema": "Kıymetli Maden", "Hedef %": 15.0},
     ]
 )
+
+with st.expander("🧙 Sektör Hedeflerini Belirlemekte Zorlanıyor musunuz? Soru-Cevapla Öneri Alın", expanded=False):
+    st.caption(
+        "Birkaç soruyu cevaplayın; sistem kural tabanlı bir mantıkla (risk toleransı + vade + öncelik → "
+        "sektör risk profili eşleştirmesi) size başlangıç için bir hedef dağılım önersin. Öneri, aşağıdaki "
+        "tabloyu otomatik doldurur — dilediğiniz gibi düzenlemeye devam edebilirsiniz."
+    )
+    with st.form("sektor_sihirbazi"):
+        secilen_sektorler = st.multiselect(
+            "İlgilendiğiniz sektör/temalar (birden fazla seçebilirsiniz)",
+            umbrella.SECTOR_OPTIONS,
+            default=["Teknoloji", "Bankacılık / Finans", "Kıymetli Maden"],
+        )
+        wc1, wc2, wc3 = st.columns(3)
+        vade = wc1.radio("Yatırım vadeniz", umbrella.WIZARD_VADE_OPTIONS, index=1)
+        risk_toleransi = wc2.radio("Risk toleransınız", umbrella.WIZARD_RISK_OPTIONS, index=1)
+        oncelik = wc3.radio("Önceliğiniz", umbrella.WIZARD_ONCELIK_OPTIONS, index=1)
+        wizard_submitted = st.form_submit_button("✨ Hedef Sektörleri Öner")
+
+    if wizard_submitted:
+        if not secilen_sektorler:
+            st.warning("En az bir sektör/tema seçin.")
+        else:
+            wizard_targets, wizard_gerekce = umbrella.wizard_recommend_targets(
+                secilen_sektorler, risk_toleransi, vade, oncelik
+            )
+            st.session_state["wizard_targets_df"] = pd.DataFrame(
+                [{"Sektör / Tema": s, "Hedef %": p} for s, p in wizard_targets]
+            )
+            st.session_state["wizard_version"] = st.session_state.get("wizard_version", 0) + 1
+            st.info(wizard_gerekce)
+
+_source_targets = st.session_state.get("wizard_targets_df", _DEFAULT_TARGETS)
+_editor_key = f"hedef_editor_{st.session_state.get('wizard_version', 0)}"
 edited = st.data_editor(
-    _DEFAULT_TARGETS,
+    _source_targets,
     num_rows="dynamic",
     width="stretch",
     column_config={
@@ -65,7 +99,7 @@ edited = st.data_editor(
         ),
         "Hedef %": st.column_config.NumberColumn("Hedef %", min_value=0.0, max_value=100.0, step=5.0),
     },
-    key="hedef_editor",
+    key=_editor_key,
 )
 
 targets: list[tuple[str, float]] = []

@@ -35,15 +35,6 @@ st.page_link(
 )
 
 st.divider()
-st.subheader("💰 Yatırım Bütçelerim")
-col1, col2 = st.columns(2)
-with col1:
-    st.metric("Haftalık Fon Kasası - Nakit Bakiye", f"{db.get_balance('FUND'):,.2f} TL")
-with col2:
-    st.metric("Günlük İşlem Kasası - Nakit Bakiye", f"{db.get_balance('DAILY'):,.2f} TL")
-st.page_link("views/portfolio.py", label="Bütçeleri güncellemek için Portföyüm sayfasına gidin →", icon="💼")
-
-st.divider()
 col_h, col_r = st.columns([3, 1])
 with col_h:
     st.subheader("⭐ Öne Çıkanlar")

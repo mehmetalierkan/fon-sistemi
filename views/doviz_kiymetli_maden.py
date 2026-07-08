@@ -3,7 +3,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from data import global_client as gc
-from ui import gradient_title
+from ui import gradient_title, recommendation_faq
 
 gradient_title("Döviz & Kıymetli Maden", "💱")
 st.caption(
@@ -14,6 +14,20 @@ st.caption(
     "hareketi bağımsız bir ikinci kaynak olarak çapraz kontrol edilir. Veriler 15 dakikada bir güncellenir."
 )
 st.page_link("views/methodology.py", label="🧭 Kriterlerin tam açıklaması için Nasıl Değerlendiriyoruz? sayfasına gidin", icon="🧭")
+recommendation_faq(
+    neden=(
+        "Döviz ve kıymetli maden fiyatlarını takip etmek, TL cinsinden birikimlerinizin alım gücünü "
+        "ve alternatif yatırım araçlarını karşılaştırmanıza yardımcı olur. Tek bir kaynağa güvenmek "
+        "yerine, birbirinden bağımsız iki kaynağı (Yahoo Finance teknik göstergeleri + Frankfurter.app "
+        "veya GLD/SLV ETF) birleştirerek daha dengeli, tek taraflı hata riski daha düşük bir yön "
+        "okuması sunmayı amaçlıyoruz."
+    ),
+    sure=(
+        "Kısa vadelidir (birkaç gün - 2 hafta). Uzun vadeli tasarruf amaçlı (ör. yıllar içinde altın "
+        "biriktirme) tutuluyorsa bu kısa vadeli teknik okumanın önemi azalır; günlük kur/fiyat "
+        "hareketleriyle ilgilenmeniz gerekmez."
+    ),
+)
 
 if st.button("🔄 Verileri Yenile"):
     st.cache_data.clear()

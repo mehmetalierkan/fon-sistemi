@@ -170,6 +170,32 @@ _CSS = """
     border-radius: 10px;
 }
 
+/* --- Sayfa-ici linkler (st.page_link): uzun aciklayici etiketler tek satira sikismasin --- */
+[data-testid="stPageLink-NavLink"] p,
+[data-testid="stPageLink-NavLink"] span {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+}
+
+/* --- Mobil / dar ekran duzeltmeleri --- */
+@media (max-width: 640px) {
+    .gradient-title {
+        font-size: 1.7rem !important;
+        line-height: 1.25 !important;
+    }
+    [data-testid="stMetricValue"] {
+        font-size: 1.4rem !important;
+    }
+    [data-testid="stMain"] .block-container {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+    [data-testid="stMetric"] {
+        padding: 10px 12px;
+    }
+}
+
 </style>
 """
 
@@ -181,6 +207,17 @@ def apply_theme() -> None:
 def gradient_title(text: str, emoji: str = "") -> None:
     prefix = f"{emoji} " if emoji else ""
     st.markdown(f'<h1 class="gradient-title">{prefix}{text}</h1>', unsafe_allow_html=True)
+
+
+def recommendation_faq(neden: str, sure: str) -> None:
+    """Al/Sat veya siralama onerisi iceren her sayfada tekrar eden SSS blogu.
+
+    neden: bu sayfanin oneri/sinyal uretme AMACINI aciklayan metin.
+    sure: onerinin ne kadar sureyle gecerli/anlamli oldugunu aciklayan metin.
+    """
+    with st.expander("❓ Neden bu öneriler var, ne kadar süre geçerli?", expanded=False):
+        st.markdown(f"**Neden bu öneriler sunuluyor?** {neden}")
+        st.markdown(f"**Ne kadar süre için geçerli?** {sure}")
 
 
 # Dogrulanmis kategorik palet (CVD-guvenli sira, bkz. dataviz skill referans paleti).
