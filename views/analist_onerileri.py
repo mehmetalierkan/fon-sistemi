@@ -9,9 +9,12 @@ from ui import gradient_title
 gradient_title("Analist Önerileri", "🏛️")
 st.caption(
     "Farklı yatırım kuruluşlarının (sell-side analistlerin) BIST ve ABD hisseleri için verdiği "
-    "al/sat konsensusunu ve ortalama hedef fiyatı gösterir. Kaynak: Yahoo Finance'in topladığı "
-    "analist raporları özeti. **Kapsam sınırı:** özellikle küçük/az takip edilen BIST hisselerinde "
-    "analist kapsaması olmayabilir; bu durumda hisse tabloda görünmez."
+    "al/sat konsensusunu ve ortalama hedef fiyatı gösterir. Kaynak: Yahoo Finance'in topladığı analist "
+    "raporları özeti — toplam Güçlü Al/Al/Tut/Sat/Güçlü Sat sayıları Yahoo'nun agregasyonudur (tek tek "
+    "hangi bankalar dahil olduğu bu sayılarda belirtilmez), ancak her hissenin altındaki **\"Son Hareket "
+    "Eden Kurumlar\"** listesi gerçek kurum adlarını gösterir (ör. Morgan Stanley, JPMorgan, Goldman Sachs "
+    "gibi). **Kapsam sınırı:** özellikle küçük/az takip edilen BIST hisselerinde analist kapsaması "
+    "olmayabilir; bu durumda hisse tabloda görünmez."
 )
 st.page_link("views/methodology.py", label="🧭 Kriterlerin tam açıklaması için Nasıl Değerlendiriyoruz? sayfasına gidin", icon="🧭")
 
@@ -58,6 +61,16 @@ for _, row in top.iterrows():
             f"Dağılım: 🟢 Güçlü Al **{int(row['guclu_al'])}** · Al **{int(row['al'])}** · "
             f"Tut **{int(row['tut'])}** · Sat **{int(row['sat'])}** · 🔴 Güçlü Sat **{int(row['guclu_sat'])}**"
         )
+        st.markdown(row.get("gerekce", ""))
+        st.markdown(row.get("kendi_onerimiz", ""))
+        st.markdown(f"**Ne kadar süre için geçerli?** {row.get('tutma_suresi', '')}")
+        moves = row.get("son_hareketler") or []
+        if moves:
+            st.markdown("**Son Hareket Eden Kurumlar:**")
+            for m in moves[:8]:
+                tarih = pd.to_datetime(m["tarih"], unit="s").date().isoformat() if m.get("tarih") else "-"
+                aksiyon = {"up": "Yükseltti", "down": "Düşürdü", "main": "Korudu", "reit": "Yineledi", "init": "Kapsama Aldı"}.get(m.get("aksiyon"), m.get("aksiyon", "-"))
+                st.caption(f"{tarih} · **{m['firma']}** — {aksiyon} → {m.get('yeni_derece', '-')} (hedef: {m.get('hedef_fiyat', '-')})")
 
 st.divider()
 st.subheader("Analist Dağılım Grafiği")

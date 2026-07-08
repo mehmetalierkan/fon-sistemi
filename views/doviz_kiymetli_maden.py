@@ -9,7 +9,9 @@ gradient_title("Döviz & Kıymetli Maden", "💱")
 st.caption(
     "Dolar/Euro/Sterlin paritelerini ve ons bazlı altın/gümüş fiyatlarını (gram altın TL karşılığıyla "
     "birlikte) aynı teknik kriterlerle (trend + RSI + momentum) izler ve yön (Al/Sat/Nötr) okuması sunar. "
-    "Veriler Yahoo Finance üzerinden 15 dakikada bir güncellenir."
+    "**Tek bir kaynağa dayanmaz:** birincil kaynak Yahoo Finance'in teknik göstergeleridir; buna ek olarak "
+    "dövizde Frankfurter.app/Avrupa Merkez Bankası referans kuru, kıymetli madende ise GLD/SLV ETF fiyat "
+    "hareketi bağımsız bir ikinci kaynak olarak çapraz kontrol edilir. Veriler 15 dakikada bir güncellenir."
 )
 st.page_link("views/methodology.py", label="🧭 Kriterlerin tam açıklaması için Nasıl Değerlendiriyoruz? sayfasına gidin", icon="🧭")
 
@@ -56,14 +58,17 @@ for _, row in df.iterrows():
         m1.metric("5 Gün Momentum", f"%{row['momentum_5g_pct']:.2f}")
         m2.metric("RSI(14)", f"{row['rsi14']:.0f}" if row['rsi14'] == row['rsi14'] else "-")
         m3.metric("Günlük Değişim", f"%{row['gunluk_getiri_pct']:.2f}" if row['gunluk_getiri_pct'] == row['gunluk_getiri_pct'] else "-")
-        st.markdown(f"**Neden bu yön?** {row['gerekce']}")
+        st.caption(f"İkincil kaynak: {row['ikincil_kaynak']}")
+        st.markdown(row["gerekce"])
+        st.markdown(row["kendi_onerimiz"])
+        st.markdown(f"**Ne kadar süre tutulmalı?** {row['tutma_suresi']}")
 
 st.divider()
 st.subheader("Tüm Tablo")
-ozet = df.rename(columns={
+ozet = df[["kod", "ad", "birim", "fiyat", "gunluk_getiri_pct", "momentum_5g_pct", "rsi14", "sinyal", "ikincil_kaynak", "gram_try"]].rename(columns={
     "kod": "Kod", "ad": "Ad", "birim": "Birim", "fiyat": "Fiyat",
     "gunluk_getiri_pct": "Günlük Değişim %", "momentum_5g_pct": "5G Momentum %",
-    "rsi14": "RSI(14)", "sinyal": "Sinyal", "gerekce": "Gerekçe", "gram_try": "Gram (TL)",
+    "rsi14": "RSI(14)", "sinyal": "Sinyal", "ikincil_kaynak": "İkincil Kaynak", "gram_try": "Gram (TL)",
 })
 st.dataframe(
     ozet,
@@ -73,7 +78,8 @@ st.dataframe(
         "Günlük Değişim %": st.column_config.NumberColumn(help="Bir önceki kapanışa göre günlük yüzde değişim.", format="%.2f%%"),
         "5G Momentum %": st.column_config.NumberColumn(help="Son 5 işlem gününe göre kümülatif getiri.", format="%.2f%%"),
         "RSI(14)": st.column_config.NumberColumn(help="14 günlük Göreceli Güç Endeksi: 70 üzeri aşırı alım, 30 altı aşırı satım bölgesi."),
-        "Sinyal": st.column_config.TextColumn(help="Trend (SMA20 vs SMA50) + momentum yönüne göre basit okuma; kesin alım-satım talimatı değildir."),
+        "Sinyal": st.column_config.TextColumn(help="Birincil (Yahoo teknik) + ikincil kaynağın birleşik okuması; kesin alım-satım talimatı değildir."),
+        "İkincil Kaynak": st.column_config.TextColumn(help="Yön okumasını teyit/çürütmek için kullanılan bağımsız ikinci veri kaynağı."),
         "Gram (TL)": st.column_config.NumberColumn(help="Ons fiyatının gram karşılığının güncel Dolar/TL kuruyla çarpılmış hali (yalnızca altın/gümüş satırları için)."),
     },
 )

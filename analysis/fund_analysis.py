@@ -100,20 +100,36 @@ def build_fund_comparison(
 def _build_rationale(row: pd.Series, breakdown: list[tuple[str, float]]) -> str:
     parts = []
     if pd.notna(row.get("getiri_1a")) and pd.notna(row.get("getiri_3a")):
-        parts.append(f"Son 1 ayda %{row['getiri_1a']:.1f}, son 3 ayda %{row['getiri_3a']:.1f} getiri sağladı.")
+        parts.append(
+            f"**Getiri:** Son 1 ayda %{row['getiri_1a']:.1f}, son 3 ayda %{row['getiri_3a']:.1f} getiri sağladı "
+            f"(son 6 ay: %{row['getiri_6a']:.1f})." if pd.notna(row.get("getiri_6a")) else
+            f"**Getiri:** Son 1 ayda %{row['getiri_1a']:.1f}, son 3 ayda %{row['getiri_3a']:.1f} getiri sağladı."
+        )
     if pd.notna(row.get("kategori_persentil_1a")):
         parts.append(
-            f"'{row['kategori']}' kategorisinde son 1 aylık getirisiyle fonların "
-            f"%{row['kategori_persentil_1a']:.0f}'inden daha iyi performans gösterdi."
+            f"**Kategori sıralaması:** '{row['kategori']}' kategorisinde son 1 aylık getirisiyle fonların "
+            f"%{row['kategori_persentil_1a']:.0f}'inden daha iyi performans gösterdi — yani sadece mutlak "
+            "getirisi değil, benzer fonlara göre göreli performansı da öne çıkıyor."
         )
     if row.get("tema") and row["tema"] != "Genel / Karma":
-        parts.append(f"Sektör/tema odağı (fon adından tahmini): {row['tema']}.")
+        parts.append(f"**Sektör/tema odağı** (fon adından tahmini): {row['tema']}.")
     if pd.notna(row.get("yillik_volatilite_pct")):
-        parts.append(f"Yıllık volatilitesi yaklaşık %{row['yillik_volatilite_pct']:.1f}.")
+        parts.append(
+            f"**Risk:** Yıllık volatilitesi yaklaşık %{row['yillik_volatilite_pct']:.1f} — bu ne kadar yüksekse "
+            "fonun değeri o kadar iniş-çıkışlı demektir; sıralama getiriyi bu riske bölerek yapılıyor, yani "
+            "sadece yüksek getirili değil, riskine göre de iyi performans gösteren fonlar öne çıkıyor."
+        )
     if breakdown:
         top3 = ", ".join(f"%{v:.0f} {k}" for k, v in breakdown[:3])
-        parts.append(f"Portföy dağılımı: {top3}.")
-    return " ".join(parts) if parts else "Yeterli veri bulunamadı."
+        parts.append(f"**Portföy dağılımı** (varlık sınıfı bazında): {top3}.")
+    if not parts:
+        return "Yeterli veri bulunamadı."
+    parts.append(
+        "**Ne kadar süre için geçerli?** Fon getirileri gün içi değil günlük NAV üzerinden hesaplanır; bu "
+        "yüzden fon önerileri haftalık/aylık ufuklu bir değerlendirmedir (BIST/ABD hisse sayfalarındaki günlük "
+        "teknik sinyallerden farklı olarak). Her Pazartesi güncel verilerle tekrar değerlendirilmesi önerilir."
+    )
+    return " ".join(parts)
 
 
 def get_fund_detail(fon_kodu: str, as_of: dt.date | None = None) -> dict:

@@ -115,8 +115,30 @@ st.code(
     language="text",
 )
 st.markdown(
-    "En yüksek skorlu 5 hisse 'Bugünün Öne Çıkan Adayları' olarak gösterilir. "
-    "Girdiğiniz günlük bütçeyle kaç adet alınabileceği otomatik hesaplanır."
+    "En yüksek skorlu 5 hisse 'Bugünün Öne Çıkan Adayları' olarak gösterilir. Bütçe artık bu sayfada elle "
+    "girilmez; **Portföyüm** sayfasındaki Günlük İşlem Kasası bakiyeniz otomatik kullanılır ve kaç adet "
+    "alınabileceği buna göre hesaplanır."
+)
+
+st.markdown("#### Ne kadar süre için geçerli?")
+st.markdown(
+    """
+Bu bir **kısa vadeli teknik okumadır** — RSI, hacim oranı ve momentum gibi bileşenler gün içinde hızla
+değişebilir. Sinyal tipik olarak birkaç gün ile 2-3 hafta arasında anlamlıdır; pozisyonu en az haftada
+bir (idealde sayfa her güncellendiğinde) tekrar değerlendirmeniz önerilir. Şirket haberleri, bilanço
+açıklamaları gibi temel/haber bazlı gelişmeler bu teknik skora dahil değildir.
+"""
+)
+
+st.markdown("#### Mum (candlestick) grafiği nasıl okunur?")
+st.markdown(
+    """
+Hisse Detayı bölümündeki grafik bir **mum grafiğidir**: her mum bir işlem gününü temsil eder.
+Gövde (kalın kısım) açılış-kapanış aralığını, fitil (ince çizgiler) günün en yüksek/en düşük fiyatını
+gösterir. 🟢 Yeşil mum kapanışın açılıştan yüksek (gün yükselişle kapanmış), 🔴 kırmızı mum ise düşük
+(gün düşüşle kapanmış) olduğu anlamına gelir. Sayfanın altındaki **"🕯️ Bu mum grafiği nasıl okunur?"**
+bölümünde de aynı açıklama yer alır.
+"""
 )
 
 st.divider()
@@ -201,15 +223,16 @@ st.divider()
 st.markdown("## 🏆 Sektörel Performans Kriterleri")
 st.markdown(
     """
-Bu sayfa iki ayrı sıralama üretir; ikisi de **bu an itibariyle** çekilen verinin anlık görüntüsüdür
-(fon evreni 1 saat, hisse taraması 15 dakika önbelleklenir, "Verileri Yenile" ile güncellenir):
+Bu sayfa üç ayrı sıralama üretir; hepsi **bu an itibariyle** çekilen verinin anlık görüntüsüdür
+(fon evreni 1 saat, hisse taramaları 15 dakika önbelleklenir, "Verileri Yenile" ile güncellenir):
 
 - **Fon Temaları**: Güvenilirlik filtresini geçen fonlar tema etiketine göre gruplanır; her tema için
   fon sayısı, **ortalama 1 ay / 3 ay getirisi** ve ortalama getiri skoru (1a/3a/6a getirilerinin
   ortalaması) hesaplanır. Sıralama ortalama getiri skoruna göredir; temanın en iyi fonu da gösterilir.
-- **Hisse Sektörleri**: İzleme listesindeki hisseler sabit sektör haritasına göre gruplanır; her sektör
-  için hisse sayısı, **ortalama teknik skor** ve ortalama 5 günlük momentum hesaplanır. Sıralama
-  ortalama teknik skora göredir; sektörün en yüksek skorlu hissesi de gösterilir.
+- **BIST Hisse Sektörleri**: İzleme listesindeki hisseler sabit sektör haritasına göre gruplanır; her
+  sektör için hisse sayısı, **ortalama teknik skor** ve ortalama 5 günlük momentum hesaplanır.
+- **ABD Sektörleri**: Aynı fonksiyon (`umbrella.stock_sector_performance`) ABD izleme listesi ve
+  `US_SECTORS` haritasıyla yeniden çalıştırılır — mantık BIST ile birebir aynıdır, sadece evren farklıdır.
 
 **Önemli sınır:** Tema/sektör etiketlerinin kaynağı Şemsiye Portföy sayfasıyla aynıdır (fonlarda isim
 bazlı tahmin, hisselerde elle hazırlanmış harita). Geçmiş performans sıralaması geleceğe dair garanti
@@ -222,10 +245,13 @@ st.markdown("## 🇺🇸 ABD Borsası Kriterleri")
 st.markdown(
     """
 Büyük/likit ABD hisseleri (ör. AAPL, MSFT, NVDA, JPM) için **⚡ Günlük İşlem Analizi ile birebir aynı**
-teknik tarama formülü kullanılır (Trend + RSI(14) + Hacim oranı + 5 günlük Momentum → skor). Tek fark
-verinin USD cinsinden olması ve evrenin ABD hisseleri olmasıdır. Ayrıca S&P 500, Nasdaq Composite ve
-Dow Jones Endüstri endeksleri karşılaştırma amacıyla gösterilir. Sektör etiketleri (ör. Teknoloji,
-Bankacılık/Finans) BIST hisselerindeki gibi elle hazırlanmış sabit bir haritadan gelir.
+teknik tarama formülü kullanılır (Trend + RSI(14) + Hacim oranı + 5 günlük Momentum → skor), aynı kısa
+vadeli (birkaç gün - birkaç hafta) geçerlilik süresi ve aynı mum grafiği okuma mantığı geçerlidir. Tek
+fark verinin USD cinsinden olması ve evrenin ABD hisseleri olmasıdır. Bütçe burada da elle girilmez;
+Portföyüm'deki Günlük İşlem Kasası bakiyeniz güncel Dolar/TL kuruyla USD'ye çevrilerek otomatik kullanılır.
+Ayrıca S&P 500, Nasdaq Composite ve Dow Jones Endüstri endeksleri karşılaştırma amacıyla gösterilir.
+Sektör etiketleri (ör. Teknoloji, Bankacılık/Finans) BIST hisselerindeki gibi elle hazırlanmış sabit bir
+haritadan gelir.
 """
 )
 
@@ -233,13 +259,23 @@ st.divider()
 st.markdown("## 💱 Döviz & Kıymetli Maden Kriterleri")
 st.markdown(
     """
-Dolar/Euro/Sterlin paritesi ile ons altın/gümüş fiyatları (Yahoo Finance üzerinden) aynı teknik
-bileşenlerle (Trend + RSI(14) + 5 günlük Momentum) değerlendirilir, ancak Günlük İşlem Analizi'ndeki
-gibi bir sayısal skor yerine basit bir **yön okuması** üretilir:
+Dolar/Euro/Sterlin paritesi ile ons altın/gümüş fiyatları **tek bir siteye dayanmaz** — iki bağımsız
+kaynak birlikte değerlendirilir:
 
-- **Al Yönlü**: Fiyat SMA20/SMA50 üzerinde, RSI aşırı alım bölgesinde değil, momentum pozitif.
-- **Sat Yönlü**: Fiyat SMA20/SMA50 altında, RSI aşırı satım bölgesinde değil, momentum negatif.
-- **Nötr**: Sinyaller karışık, belirgin bir yön yok.
+- **Birincil kaynak — Yahoo Finance (teknik göstergeler):** Trend (SMA20/SMA50) + RSI(14) + 5 günlük
+  Momentum.
+- **İkincil kaynak — bağımsız çapraz kontrol:** Döviz paritelerinde **Frankfurter.app** (Avrupa Merkez
+  Bankası referans kurları) üzerinden hesaplanan son ~10 iş günlük bağımsız momentum; kıymetli madenlerde
+  ise **GLD/SLV ETF'lerinin** (altın/gümüşü farklı bir piyasa mekanizmasıyla izleyen borsa yatırım
+  fonları) fiyat hareketi.
+
+İki kaynak aynı yönü işaret ediyorsa sinyal güçlenir (**Al Yönlü**/**Sat Yönlü**); çelişiyorsa sinyal
+**Nötr**'e çekilir ve bu sayfada açıkça belirtilir. Her enstrüman için ayrıca:
+
+- **Sistemin görüşü:** iki kaynağın birleşik okumasına dayanan, açıkça gerekçelendirilmiş kısa bir yorum
+  (kesin bir alım-satım talimatı değildir).
+- **Ne kadar süre tutulmalı?** Bu sinyal kısa vadelidir (birkaç gün - 2 hafta); uzun vadeli tasarruf
+  amaçlı (ör. yıllar içinde altın biriktirme) tutuluyorsa önemi azalır.
 
 Gram altın/gümüş TL karşılığı, ons fiyatının (USD) güncel Dolar/TL kuruyla çarpılıp 31.1034768'e
 (1 ons = bu kadar gram) bölünmesiyle hesaplanır.
@@ -254,11 +290,21 @@ Bu sayfa kendi teknik skorlama sistemimizi değil, **farklı yatırım kuruluşl
 analistlerin)** o hisse için verdiği al/sat görüşlerinin özetini gösterir — Yahoo Finance'in topladığı
 konsensus verisi kullanılır:
 
+- **Hangi kurumlardan veri geliyor?** Toplam Güçlü Al/Al/Tut/Sat/Güçlü Sat sayıları Yahoo'nun
+  agregasyonudur (bu sayılarda tek tek hangi bankalar olduğu belirtilmez). Ancak her hissenin altındaki
+  **"Son Hareket Eden Kurumlar"** listesi Yahoo'nun `upgradeDowngradeHistory` verisinden gelen **gerçek
+  kurum adlarını** (ör. Morgan Stanley, JPMorgan, Goldman Sachs, Evercore ISI gibi), hareket tarihini,
+  eski/yeni dereceyi ve o kurumun güncel hedef fiyatını gösterir.
 - **Konsensus Skoru**: 1.0 (Güçlü Al) ile 5.0 (Güçlü Sat) arasında, analist görüşlerinin ortalaması.
   Düşük skor = daha olumlu konsensus. Sıralama bu skora göre (düşükten yükseğe) yapılır.
 - **Analist dağılımı**: Güçlü Al / Al / Tut / Sat / Güçlü Sat kategorilerinde kaç analist görüş
   bildirdiği.
 - **Hedefe göre potansiyel**: Analistlerin ortalama hedef fiyatının güncel fiyata göre yüzde farkı.
+- **Sistemin görüşü:** Konsensus + hedef fiyat potansiyelini birleştiren kısa bir yorum; teknik
+  sinyallerle çelişebileceği (farklı zaman ufuklarına baktıkları için) açıkça belirtilir.
+- **Ne kadar süre için geçerli?** Analist hedef fiyatları tipik olarak **12 aylık** bir ufku yansıtır —
+  bu, teknik tarama sayfalarındaki günlük/haftalık sinyallerden çok daha uzun vadelidir ve genellikle
+  çeyreklik bilanço dönemlerinde güncellenir.
 
 **Önemli sınır:** Bu veri, herkese açık ama belgelendirilmemiş bir Yahoo Finance uç noktasından gelir;
 özellikle küçük/az takip edilen BIST hisselerinde analist kapsaması bulunmayabilir — bu durumda hisse
@@ -267,14 +313,18 @@ tabloda hiç görünmez (sıfır olarak değil, eksik veri olarak ele alınır).
 )
 
 st.divider()
-st.markdown("## ⭐ Ana Sayfa \"Öne Çıkanlar\" ve Bütçe Ayarları")
+st.markdown("## ⭐ Ana Sayfa \"Öne Çıkanlar\" ve Bütçe Yönetimi")
 st.markdown(
     """
 Ana sayfadaki Fonlar / BIST Hisseleri / ABD Hisseleri / Döviz-Altın sekmeleri, **yeni bir kriter
 üretmez** — her biri kendi sayfasındaki sıralamanın ilk 3 sonucunu gösterir (yukarıdaki ilgili bölümlere
-bakın). Ana sayfadaki **Yatırım Bütçelerim** alanı, Portföyüm sayfasındaki Haftalık Fon Kasası / Günlük
-İşlem Kasası nakit bakiyesini doğrudan günceller; bu bakiyeler diğer sayfalardaki (Günlük İşlem Analizi,
-Şemsiye Portföy Oluşturucu) varsayılan bütçe değerleridir.
+bakın); ana sayfada sadece güncel nakit bakiyeler salt-okunur olarak gösterilir.
+
+**Bütçeler artık sadece Portföyüm sayfasında düzenlenir.** Her kasanın (Haftalık Fon / Günlük İşlem)
+altındaki **"🎯 Nakit Bütçeyi Güncelle"** bölümünden bakiyeyi doğrudan değiştirebilirsiniz; bu değer,
+diğer tüm sayfalardaki (Günlük İşlem Analizi, ABD Borsası, Şemsiye Portföy Oluşturucu) varsayılan bütçe
+olarak otomatik kullanılır — o sayfalarda ayrıca bir bütçe girişi yoktur, çünkü aynı bilginin birden
+fazla yerde tekrar girilmesinin bir anlamı yok.
 """
 )
 

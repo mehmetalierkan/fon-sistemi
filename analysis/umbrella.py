@@ -366,12 +366,16 @@ def fund_theme_performance(fund_returns: pd.DataFrame) -> pd.DataFrame:
     return grouped.sort_values("ort_skor", ascending=False).reset_index(drop=True)
 
 
-def stock_sector_performance(stock_screen: pd.DataFrame) -> pd.DataFrame:
-    """Izleme listesi hisselerini sektorlere gore gruplayip ortalama teknik skora gore siralar."""
+def stock_sector_performance(stock_screen: pd.DataFrame, sector_map: dict[str, str] | None = None) -> pd.DataFrame:
+    """Izleme listesi hisselerini sektorlere gore gruplayip ortalama teknik skora gore siralar.
+
+    sector_map verilmezse BIST'in STOCK_SECTORS haritasi kullanilir; ABD hisseleri icin
+    global_client.US_SECTORS gecirilerek ayni fonksiyon yeniden kullanilabilir.
+    """
     if stock_screen is None or stock_screen.empty:
         return pd.DataFrame()
     df = stock_screen.copy()
-    df["sektor"] = df["kod"].map(sc.STOCK_SECTORS)
+    df["sektor"] = df["kod"].map(sector_map or sc.STOCK_SECTORS)
     df = df.dropna(subset=["sektor"])
     if df.empty:
         return pd.DataFrame()

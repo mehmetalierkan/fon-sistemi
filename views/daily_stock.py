@@ -4,15 +4,18 @@ import streamlit as st
 
 from analysis import daily_screener
 from data import stock_client
+from portfolio import db
 from ui import gradient_title
 
 gradient_title("Günlük İşlem Analizi (Midas — BIST Hisse)", "⚡")
 st.caption("Serbestçe düzenlenebilir bir izleme listesindeki likit BIST hisseleri için teknik tarama.")
 st.page_link("views/methodology.py", label="🧭 Kriterlerin tam açıklaması için Nasıl Değerlendiriyoruz? sayfasına gidin", icon="🧭")
 
+budget = db.get_balance("DAILY")
 col_a, col_b = st.columns([1, 3])
 with col_a:
-    budget = st.number_input("Günlük İşlem Bütçesi (TL)", min_value=100.0, value=10_000.0, step=500.0)
+    st.metric("Günlük İşlem Bütçesi (TL)", f"{budget:,.2f}")
+    st.caption("Portföyüm sayfasındaki Günlük İşlem Kasası bakiyeniz; oradan güncelleyebilirsiniz.")
     if st.button("🔄 Verileri Yenile"):
         st.cache_data.clear()
         st.rerun()
@@ -85,3 +88,16 @@ if selected:
         fig.add_trace(go.Scatter(x=hist["tarih"], y=hist["sma50"], name="SMA50", line=dict(width=1.5, color="#eb6834")))
         fig.update_layout(title=f"{selected} — 6 Aylık Fiyat Grafiği", xaxis_rangeslider_visible=False)
         st.plotly_chart(fig, width="stretch")
+        with st.expander("🕯️ Bu mum (candlestick) grafiği nasıl okunur?"):
+            st.markdown(
+                """
+Her mum bir işlem gününü temsil eder ve o günün **açılış, kapanış, en yüksek ve en düşük** fiyatını gösterir:
+
+- **Gövde (kalın dikdörtgen kısım):** açılış ile kapanış fiyatı arasındaki aralıktır.
+- **Fitil (gövdenin üst/altındaki ince çizgiler):** o gün içinde görülen en yüksek ve en düşük fiyatı gösterir.
+- **🟢 Yeşil mum:** kapanış fiyatı açılıştan **yüksek** — gün yükselişle kapanmış (gövdenin altı = açılış, üstü = kapanış).
+- **🔴 Kırmızı mum:** kapanış fiyatı açılıştan **düşük** — gün düşüşle kapanmış (gövdenin üstü = açılış, altı = kapanış).
+- **Mor çizgi (SMA20) / turuncu çizgi (SMA50):** son 20 / 50 günün ortalama kapanış fiyatı — kısa vadeli trendi gösterir.
+  Mumlar bu çizgilerin üzerindeyse fiyat kısa vadeli ortalamasının üzerinde seyrediyor demektir.
+"""
+            )

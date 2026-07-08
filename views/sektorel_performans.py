@@ -5,17 +5,19 @@ import plotly.express as px
 import streamlit as st
 
 from analysis import daily_screener, umbrella
+from data import global_client as gc
 from data import tefas_client
 from ui import CHART_COLORS, gradient_title
 
 gradient_title("Sektörel Performans", "🏆")
 st.caption(
-    "Fon temaları ve hisse sektörleri, sistemin mevcut performans parametreleriyle ayrı ayrı sıralanır: "
-    "fonlar için güvenilirlik filtresini geçen fonların **ortalama 1 ay / 3 ay getirisi**, hisseler için "
-    "izleme listesindeki hisselerin **ortalama teknik skoru ve 5 günlük momentumu**. "
-    "**Önemli sınır:** fon tema etiketi fon adından tahmindir, hisse sektör etiketi elle hazırlanmış sabit "
-    "bir haritadan gelir. Bu sayfa **bu an itibariyle** bir anlık görüntüdür (snapshot); **🔄 Verileri "
-    "Yenile** ile güncellenebilir. Detaylar için **🧭 Nasıl Değerlendiriyoruz?** sayfasına bakabilirsiniz."
+    "Fon temaları, BIST hisse sektörleri ve ABD hisse sektörleri, sistemin mevcut performans "
+    "parametreleriyle ayrı ayrı sıralanır: fonlar için güvenilirlik filtresini geçen fonların **ortalama "
+    "1 ay / 3 ay getirisi**, BIST/ABD hisseleri için izleme listesindeki hisselerin **ortalama teknik "
+    "skoru ve 5 günlük momentumu**. **Önemli sınır:** fon tema etiketi fon adından tahmindir, hisse sektör "
+    "etiketi elle hazırlanmış sabit bir haritadan gelir. Bu sayfa **bu an itibariyle** bir anlık görüntüdür "
+    "(snapshot); **🔄 Verileri Yenile** ile güncellenebilir. Detaylar için **🧭 Nasıl Değerlendiriyoruz?** "
+    "sayfasına bakabilirsiniz."
 )
 
 if st.button("🔄 Verileri Yenile"):
@@ -33,10 +35,16 @@ def _load_stocks():
     return daily_screener.build_daily_screening()
 
 
+@st.cache_data(ttl=900, show_spinner="ABD hisseleri taranıyor...")
+def _load_us_stocks():
+    return daily_screener.build_us_screening()
+
+
 as_of = dt.date.today()
 try:
     funds_df = _load_funds(as_of.isoformat())
     stocks_df = _load_stocks()
+    us_stocks_df = _load_us_stocks()
 except Exception as exc:
     st.error(f"Veri çekilirken hata oluştu: {exc}")
     st.stop()
@@ -138,4 +146,53 @@ else:
     st.caption(
         "Sektör etiketleri, izleme listesindeki hisseler için elle hazırlanmış sabit bir haritadan gelir "
         "(borsa/resmi kaynak verisi değildir). Skor formülü Günlük İşlem Analizi sayfasıyla aynıdır."
+    )
+
+st.divider()
+
+# ---------------- ABD sektorleri ----------------
+st.subheader("🇺🇸 ABD Sektörleri Sıralaması")
+us_sektor_perf = umbrella.stock_sector_performance(us_stocks_df, sector_map=gc.US_SECTORS)
+if us_sektor_perf.empty:
+    st.info("ABD borsası verisi çekilemedi, lütfen verileri yenileyin.")
+else:
+    chart_df = us_sektor_perf.sort_values("ort_skor", ascending=True)
+    fig = px.bar(
+        chart_df,
+        x="ort_skor",
+        y="sektor",
+        orientation="h",
+        title="ABD Sektörleri — Ortalama Teknik Skor",
+        labels={"ort_skor": "Ortalama teknik skor", "sektor": ""},
+        color_discrete_sequence=[CHART_COLORS[2]],
+    )
+    fig.update_layout(height=max(360, 32 * len(chart_df)))
+    st.plotly_chart(fig, width="stretch")
+
+    us_sektor_tablo = us_sektor_perf.rename(
+        columns={
+            "sektor": "Sektör",
+            "hisse_sayisi": "Hisse Sayısı",
+            "ort_skor": "Ort. Teknik Skor",
+            "ort_momentum_5g": "Ort. 5G Momentum %",
+            "en_iyi_kod": "En İyi Hisse",
+            "en_iyi_skor": "En İyi Hisse Skoru",
+        }
+    )
+    st.dataframe(
+        us_sektor_tablo,
+        width="stretch",
+        height=400,
+        column_config={
+            "Sektör": st.column_config.TextColumn(help="Elle hazırlanmış sabit sektör haritasından gelen etiket."),
+            "Hisse Sayısı": st.column_config.NumberColumn(help="Bu sektörde izleme listesinde bulunan hisse sayısı."),
+            "Ort. Teknik Skor": st.column_config.NumberColumn(help="Sektördeki hisselerin ortalama teknik skoru (trend+RSI+hacim+momentum)."),
+            "Ort. 5G Momentum %": st.column_config.NumberColumn(help="Sektördeki hisselerin ortalama 5 günlük momentumu.", format="%.2f%%"),
+            "En İyi Hisse": st.column_config.TextColumn(help="Bu sektörde en yüksek teknik skora sahip hisse."),
+            "En İyi Hisse Skoru": st.column_config.NumberColumn(help="En iyi hissenin teknik skoru."),
+        },
+    )
+    st.caption(
+        "Sektör etiketleri elle hazırlanmış sabit bir haritadan gelir. Skor formülü ABD Borsası sayfasıyla "
+        "(ve dolayısıyla Günlük İşlem Analizi ile) aynıdır; sadece evren ABD hisseleri, fiyatlar USD cinsindendir."
     )

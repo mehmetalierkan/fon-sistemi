@@ -36,27 +36,12 @@ st.page_link(
 
 st.divider()
 st.subheader("💰 Yatırım Bütçelerim")
-st.caption(
-    "Bu tutarlar Portföyüm sayfasındaki nakit bakiyenizle aynıdır ve diğer sayfalardaki (Şemsiye Portföy "
-    "Oluşturucu vb.) varsayılan bütçe olarak kullanılır. İstediğiniz zaman güncelleyebilirsiniz."
-)
 col1, col2 = st.columns(2)
 with col1:
-    fund_budget_input = st.number_input(
-        "Haftalık Fon Bütçesi (TL)", min_value=0.0, value=float(db.get_balance("FUND")), step=1_000.0
-    )
-    if st.button("Fon Bütçesini Güncelle"):
-        db.set_balance("FUND", fund_budget_input)
-        st.success("Fon bütçesi güncellendi.")
-        st.rerun()
+    st.metric("Haftalık Fon Kasası - Nakit Bakiye", f"{db.get_balance('FUND'):,.2f} TL")
 with col2:
-    daily_budget_input = st.number_input(
-        "Günlük İşlem Bütçesi (TL)", min_value=0.0, value=float(db.get_balance("DAILY")), step=500.0
-    )
-    if st.button("Hisse Bütçesini Güncelle"):
-        db.set_balance("DAILY", daily_budget_input)
-        st.success("Hisse bütçesi güncellendi.")
-        st.rerun()
+    st.metric("Günlük İşlem Kasası - Nakit Bakiye", f"{db.get_balance('DAILY'):,.2f} TL")
+st.page_link("views/portfolio.py", label="Bütçeleri güncellemek için Portföyüm sayfasına gidin →", icon="💼")
 
 st.divider()
 col_h, col_r = st.columns([3, 1])
@@ -169,10 +154,3 @@ with tab_fx:
                 col.metric(row["ad"], f"{deger} {birim}", delta=f"%{row['gunluk_getiri_pct']:.2f}" if row['gunluk_getiri_pct'] == row['gunluk_getiri_pct'] else None)
                 st.caption(row["sinyal"])
     st.page_link("views/doviz_kiymetli_maden.py", label="Detaylı döviz/kıymetli maden sayfasına git →", icon="💱")
-
-st.divider()
-col1, col2 = st.columns(2)
-with col1:
-    st.metric("Haftalık Fon Kasası - Nakit Bakiye", f"{db.get_balance('FUND'):,.2f} TL")
-with col2:
-    st.metric("Günlük İşlem Kasası - Nakit Bakiye", f"{db.get_balance('DAILY'):,.2f} TL")

@@ -45,6 +45,21 @@ def _render_bucket(bucket: str, label: str, price_lookup, code_help: str) -> Non
     m2.metric("Pozisyon Değeri", f"{summary['pozisyon_degeri']:,.2f} TL")
     m3.metric("Toplam Değer", f"{summary['toplam_deger']:,.2f} TL")
 
+    with st.expander("🎯 Nakit Bütçeyi Güncelle"):
+        st.caption(
+            "Bu kasanın nakit bakiyesini doğrudan değiştirir (işlem geçmişini etkilemez). Sitedeki "
+            "diğer tüm sayfalar (Günlük İşlem Analizi, ABD Borsası, Şemsiye Portföy Oluşturucu vb.) "
+            "varsayılan bütçe olarak buradaki bakiyeyi kullanır."
+        )
+        new_balance = st.number_input(
+            "Yeni Nakit Bakiye (TL)", min_value=0.0, value=float(summary["bakiye"]), step=500.0, key=f"balance_{bucket}"
+        )
+        if st.button("Bakiyeyi Güncelle", key=f"update_balance_{bucket}"):
+            db.set_balance(bucket, new_balance)
+            st.success("Bakiye güncellendi.")
+            st.cache_data.clear()
+            st.rerun()
+
     if summary["pozisyonlar"]:
         rows = []
         for code, pos in summary["pozisyonlar"].items():

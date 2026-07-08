@@ -4,6 +4,7 @@ import streamlit as st
 
 from analysis import daily_screener
 from data import global_client as gc
+from portfolio import db
 from ui import gradient_title
 
 gradient_title("ABD Borsası", "🇺🇸")
@@ -14,9 +15,27 @@ st.caption(
 )
 st.page_link("views/methodology.py", label="🧭 Kriterlerin tam açıklaması için Nasıl Değerlendiriyoruz? sayfasına gidin", icon="🧭")
 
+
+@st.cache_data(ttl=900, show_spinner=False)
+def _usdtry_rate() -> float | None:
+    try:
+        hist = gc.get_us_history("USDTRY=X", range_="5d", interval="1d")
+        return float(hist.iloc[-1]["kapanis"]) if not hist.empty else None
+    except Exception:
+        return None
+
+
+usdtry = _usdtry_rate()
+tl_budget = db.get_balance("DAILY")
+budget = (tl_budget / usdtry) if usdtry else 100.0
+
 col_a, col_b = st.columns([1, 3])
 with col_a:
-    budget = st.number_input("İşlem Bütçesi (USD)", min_value=10.0, value=1_000.0, step=100.0)
+    st.metric("İşlem Bütçesi (USD)", f"{budget:,.2f}")
+    st.caption(
+        f"Portföyüm'deki Günlük İşlem Kasası bakiyeniz ({tl_budget:,.0f} TL), güncel Dolar/TL kuruyla "
+        "(≈ {:.2f}) USD'ye çevrilmiş halidir.".format(usdtry) if usdtry else "Güncel kur çekilemedi, varsayılan değer kullanılıyor."
+    )
     if st.button("🔄 Verileri Yenile"):
         st.cache_data.clear()
         st.rerun()
@@ -114,3 +133,15 @@ if selected:
         fig.add_trace(go.Scatter(x=hist["tarih"], y=hist["sma50"], name="SMA50", line=dict(width=1.5, color="#eb6834")))
         fig.update_layout(title=f"{selected} — 6 Aylık Fiyat Grafiği", xaxis_rangeslider_visible=False)
         st.plotly_chart(fig, width="stretch")
+        with st.expander("🕯️ Bu mum (candlestick) grafiği nasıl okunur?"):
+            st.markdown(
+                """
+Her mum bir işlem gününü temsil eder ve o günün **açılış, kapanış, en yüksek ve en düşük** fiyatını gösterir:
+
+- **Gövde (kalın dikdörtgen kısım):** açılış ile kapanış fiyatı arasındaki aralıktır.
+- **Fitil (gövdenin üst/altındaki ince çizgiler):** o gün içinde görülen en yüksek ve en düşük fiyatı gösterir.
+- **🟢 Yeşil mum:** kapanış fiyatı açılıştan **yüksek** — gün yükselişle kapanmış.
+- **🔴 Kırmızı mum:** kapanış fiyatı açılıştan **düşük** — gün düşüşle kapanmış.
+- **Mor çizgi (SMA20) / turuncu çizgi (SMA50):** son 20 / 50 günün ortalama kapanış fiyatı — kısa vadeli trendi gösterir.
+"""
+            )

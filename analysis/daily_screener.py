@@ -54,7 +54,7 @@ def _score_watchlist(
                 "momentum_5g_pct": momentum_5d,
                 "skor": score,
                 "alinabilecek_adet": afford_qty,
-                "gerekce": _build_rationale(trend_up, rsi, vol_ratio, momentum_5d),
+                "gerekce": _build_rationale(trend_up, rsi, vol_ratio, momentum_5d, score),
             }
         )
     if not rows:
@@ -79,21 +79,41 @@ def build_us_screening(budget_usd: float = 1_000.0, watchlist: list[str] | None 
     )
 
 
-def _build_rationale(trend_up: bool, rsi: float, vol_ratio: float, momentum_5d: float) -> str:
+def _build_rationale(trend_up: bool, rsi: float, vol_ratio: float, momentum_5d: float, score: float) -> str:
     parts = []
     if trend_up:
-        parts.append("Fiyat 20 ve 50 günlük ortalamaların üzerinde, kısa vadeli trend yukarı yönlü.")
+        parts.append(
+            "**Trend:** Fiyat, 20 günlük ortalama 50 günlük ortalamanın üzerindeyken kendisi de 20 günlük "
+            "ortalamanın üzerinde — bu, hem orta hem kısa vadeli eğilimin yukarı yönlü olduğu anlamına gelir."
+        )
     else:
-        parts.append("Fiyat kısa vadeli ortalamaların altında/yakınında, güçlü bir trend sinyali yok.")
+        parts.append(
+            "**Trend:** Fiyat kısa vadeli ortalamaların altında/yakınında seyrediyor; net bir yukarı trend "
+            "sinyali yok, bu da skoru düşüren en önemli etken."
+        )
     if pd.notna(rsi):
         if rsi > 70:
-            durum = "aşırı alım bölgesine yakın (geri çekilme riski)"
+            durum = "aşırı alım bölgesine yakın — kısa vadede kâr satışıyla geri çekilme riski artmış olabilir"
         elif rsi < 30:
-            durum = "aşırı satım bölgesine yakın (tepki alımı ihtimali)"
+            durum = "aşırı satım bölgesine yakın — düşüş hız kesmiş olabilir, tepki alımı ihtimali var"
         else:
-            durum = "nötr/sağlıklı bölgede"
-        parts.append(f"RSI(14) {rsi:.0f} - {durum}.")
+            durum = "nötr/sağlıklı bölgede, ne aşırı alım ne aşırı satım baskısı belirgin"
+        parts.append(f"**RSI(14):** {rsi:.0f} — {durum}. (0-100 arası; 70 üzeri aşırı alım, 30 altı aşırı satım kabul edilir.)")
     if vol_ratio and vol_ratio > 1.3:
-        parts.append(f"Hacim, 20 günlük ortalamanın %{(vol_ratio - 1) * 100:.0f} üzerinde - ilgi artışı var.")
-    parts.append(f"Son 5 işlem günündeki momentum: %{momentum_5d:.1f}.")
+        parts.append(
+            f"**Hacim:** Günlük işlem hacmi, son 20 günlük ortalamanın %{(vol_ratio - 1) * 100:.0f} üzerinde — "
+            "bu hisseye olan ilginin arttığını, fiyat hareketinin daha fazla katılımcı tarafından desteklendiğini gösterir."
+        )
+    else:
+        parts.append("**Hacim:** Ortalamaya yakın, belirgin bir ilgi artışı/azalışı yok.")
+    parts.append(f"**Momentum:** Son 5 işlem gününde toplam %{momentum_5d:.1f} getiri.")
+    parts.append(
+        f"**Toplam skor {score:.1f}** — bu dört bileşenin ağırlıklı toplamıdır, sıralama bu skora göre yapılır."
+    )
+    parts.append(
+        "**Ne kadar süre için geçerli?** Bu tamamen kısa vadeli bir teknik okumadır; RSI ve hacim gibi "
+        "bileşenler gün içinde hızla değişebileceğinden sinyal tipik olarak birkaç gün ile 2-3 hafta arasında "
+        "anlamlıdır. Pozisyonu en az haftada bir (idealde her gün, bu sayfa güncellendiğinde) tekrar "
+        "değerlendirin; şirket haberleri/bilanço gibi temel gelişmeler bu teknik skora dahil değildir."
+    )
     return " ".join(parts)
