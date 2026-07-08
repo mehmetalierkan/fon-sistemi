@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 .streamlit/secrets.toml
 portfolio/portfolio.db
+*.db.bak
