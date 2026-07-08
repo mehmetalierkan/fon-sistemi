@@ -1,9 +1,4 @@
 """Portfoy: iki kasa (haftalik fon / gunluk hisse) - bakiye, pozisyonlar, islem gecmisi ve yeni islem girisi."""
-import sys
-from pathlib import Path
-
-sys.path.append(str(Path(__file__).resolve().parent.parent))
-
 import datetime as dt
 
 import pandas as pd
@@ -11,12 +6,11 @@ import streamlit as st
 
 from data import stock_client, tefas_client
 from portfolio import db
-
-st.set_page_config(page_title="Portföyüm", page_icon="💼", layout="wide")
+from ui import gradient_title
 
 db.init_db()
 
-st.title("💼 Portföyüm")
+gradient_title("Portföyüm", "💼")
 st.caption(
     "Buradaki bakiyeler ve pozisyonlar, aşağıdaki formdan elle girdiğiniz işlemlere göre hesaplanır. "
     "Sistem hiçbir aracı kuruma (Midas dahil) otomatik bağlanmaz; gerçekleştirdiğiniz her alım/satımı "

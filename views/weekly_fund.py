@@ -1,23 +1,18 @@
 """Haftalik fon karsilastirma ve gerekceli oneri sayfasi."""
-import sys
-from pathlib import Path
-
-sys.path.append(str(Path(__file__).resolve().parent.parent))
-
 import datetime as dt
 
 import plotly.express as px
 import streamlit as st
 
 from analysis import fund_analysis
+from ui import CHART_COLORS, cap_categories, gradient_title
 
-st.set_page_config(page_title="Haftalık Fon Analizi", page_icon="📈", layout="wide")
-
-st.title("📈 Haftalık Fon Analizi")
+gradient_title("Haftalık Fon Analizi", "📈")
 st.caption(
     "TEFAS'ın herkese açık verileriyle hesaplanır. Not: TEFAS'ın ücretsiz API'si fonun *varlık sınıfı* "
     "dağılımını (hisse senedi/tahvil/döviz vb. yüzdeleri) verir; fon içindeki spesifik hisse senedi "
-    "isimlerini/ağırlıklarını vermez."
+    "isimlerini/ağırlıklarını vermez. Kriterlerin tam açıklaması için sol menüden "
+    "**🧭 Nasıl Değerlendiriyoruz?** sayfasına bakabilirsiniz."
 )
 
 
@@ -31,6 +26,14 @@ def _load(fon_tipi: str, kategori: str, top_n: int, as_of_str: str):
 def _load_detail(fon_kodu: str, as_of_str: str):
     as_of = dt.date.fromisoformat(as_of_str)
     return fund_analysis.get_fund_detail(fon_kodu, as_of=as_of)
+
+
+def _pie(breakdown, title, key=None):
+    capped = cap_categories(breakdown)
+    labels = [x[0] for x in capped]
+    values = [x[1] for x in capped]
+    fig = px.pie(names=labels, values=values, title=title, color_discrete_sequence=CHART_COLORS)
+    st.plotly_chart(fig, width="stretch", key=key)
 
 
 col_a, col_b, col_c, col_d = st.columns([1, 1, 1, 1])
@@ -75,10 +78,7 @@ for rec in recommendations:
         m4.metric("Yıllık Volatilite", f"%{rec['yillik_volatilite_pct']:.1f}" if rec['yillik_volatilite_pct'] == rec['yillik_volatilite_pct'] else "-")
         st.markdown(f"**Neden bu fon?** {rec['gerekce']}")
         if rec["varlik_dagilimi"]:
-            labels = [x[0] for x in rec["varlik_dagilimi"]]
-            values = [x[1] for x in rec["varlik_dagilimi"]]
-            fig = px.pie(names=labels, values=values, title="Varlık Dağılımı (%)")
-            st.plotly_chart(fig, width="stretch", key=f"pie_{rec['fonKodu']}")
+            _pie(rec["varlik_dagilimi"], "Varlık Dağılımı (%)", key=f"pie_{rec['fonKodu']}")
 
 st.divider()
 st.subheader("Tüm Fon Karşılaştırma Tablosu")
@@ -99,10 +99,7 @@ if selected_fund:
     detail = _load_detail(selected_fund, as_of.isoformat())
     hist = detail["tarihce"]
     if not hist.empty:
-        fig = px.line(hist, x="tarih", y="fiyat", title=f"{selected_fund} - 12 Aylık NAV Geçmişi")
+        fig = px.line(hist, x="tarih", y="fiyat", title=f"{selected_fund} - 12 Aylık NAV Geçmişi", color_discrete_sequence=CHART_COLORS)
         st.plotly_chart(fig, width="stretch")
     if detail["varlik_dagilimi"]:
-        labels = [x[0] for x in detail["varlik_dagilimi"]]
-        values = [x[1] for x in detail["varlik_dagilimi"]]
-        fig2 = px.pie(names=labels, values=values, title=f"{selected_fund} - Varlık Dağılımı (%)")
-        st.plotly_chart(fig2, width="stretch")
+        _pie(detail["varlik_dagilimi"], f"{selected_fund} - Varlık Dağılımı (%)")

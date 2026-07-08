@@ -1,21 +1,16 @@
 """Gunluk BIST hisse tarama ve gerekceli oneri sayfasi."""
-import sys
-from pathlib import Path
-
-sys.path.append(str(Path(__file__).resolve().parent.parent))
-
 import plotly.graph_objects as go
 import streamlit as st
 
 from analysis import daily_screener
 from data import stock_client
+from ui import gradient_title
 
-st.set_page_config(page_title="Günlük İşlem Analizi", page_icon="⚡", layout="wide")
-
-st.title("⚡ Günlük İşlem Analizi (Midas — BIST Hisse)")
+gradient_title("Günlük İşlem Analizi (Midas — BIST Hisse)", "⚡")
 st.caption(
     "Serbestçe düzenlenebilir bir izleme listesindeki likit BIST hisseleri için teknik tarama. "
-    "Bu bir otomatik alım-satım sistemi değildir; sinyaller yalnızca değerlendirme amaçlıdır."
+    "Bu bir otomatik alım-satım sistemi değildir; sinyaller yalnızca değerlendirme amaçlıdır. "
+    "Kriterlerin tam açıklaması için sol menüden **🧭 Nasıl Değerlendiriyoruz?** sayfasına bakabilirsiniz."
 )
 
 col_a, col_b = st.columns([1, 3])
@@ -71,8 +66,9 @@ if selected:
         fig.add_trace(go.Candlestick(
             x=hist["tarih"], open=hist["acilis"], high=hist["yuksek"], low=hist["dusuk"], close=hist["kapanis"],
             name=selected,
+            increasing_line_color="#1baf7a", decreasing_line_color="#e34948",
         ))
-        fig.add_trace(go.Scatter(x=hist["tarih"], y=hist["sma20"], name="SMA20", line=dict(width=1)))
-        fig.add_trace(go.Scatter(x=hist["tarih"], y=hist["sma50"], name="SMA50", line=dict(width=1)))
+        fig.add_trace(go.Scatter(x=hist["tarih"], y=hist["sma20"], name="SMA20", line=dict(width=1.5, color="#4a3aa7")))
+        fig.add_trace(go.Scatter(x=hist["tarih"], y=hist["sma50"], name="SMA50", line=dict(width=1.5, color="#eb6834")))
         fig.update_layout(title=f"{selected} — 6 Aylık Fiyat Grafiği", xaxis_rangeslider_visible=False)
         st.plotly_chart(fig, width="stretch")
