@@ -64,6 +64,43 @@ if df.empty:
 market_filter = st.radio("Piyasa", ["Tümü", "BIST", "ABD"], horizontal=True)
 view_df = df if market_filter == "Tümü" else df[df["piyasa"] == market_filter]
 
+firm_counts: dict[str, int] = {}
+for moves in view_df["son_hareketler"]:
+    for m in moves or []:
+        firma = m.get("firma")
+        if firma:
+            firm_counts[firma] = firm_counts.get(firma, 0) + 1
+
+st.subheader("Hangi Kurumlar Takip Ediyor?")
+st.caption(
+    "Aşağıdaki liste, seçili piyasadaki hisselerin \"Son Hareket Eden Kurumlar\" verisinde en az bir kez "
+    "geçen yatırım kuruluşlarını (bankalar, aracı kurumlar) ve kaç hissede hareket ettiklerini gösterir. "
+    "Bir veya birden fazla kurum seçerek sayfayı sadece o kurum(lar)ın yakın zamanda görüş bildirdiği "
+    "hisselerle sınırlayabilirsiniz."
+)
+if firm_counts:
+    firm_df = (
+        pd.DataFrame(sorted(firm_counts.items(), key=lambda kv: kv[1], reverse=True), columns=["Kurum", "Hisse Sayısı"])
+    )
+    c1, c2 = st.columns([2, 3])
+    with c1:
+        st.dataframe(firm_df, width="stretch", height=280, hide_index=True)
+    with c2:
+        selected_firms = st.multiselect(
+            "Kuruma göre filtrele", options=firm_df["Kurum"].tolist(), placeholder="Kurum seçin"
+        )
+    if selected_firms:
+        mask = view_df["son_hareketler"].apply(
+            lambda moves: any((m.get("firma") in selected_firms) for m in (moves or []))
+        )
+        view_df = view_df[mask]
+        if view_df.empty:
+            st.info("Seçilen kurum(lar) için yakın zamanda hareket eden hisse bulunamadı.")
+            st.stop()
+else:
+    st.info("Bu piyasada kurum bazlı hareket verisi bulunamadı.")
+
+st.divider()
 st.subheader("En Güçlü Konsensuslar (Al Yönlü)")
 top = view_df.sort_values("konsensus_skor", ascending=True, na_position="last").head(5)
 for _, row in top.iterrows():
