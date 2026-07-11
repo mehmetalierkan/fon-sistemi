@@ -20,7 +20,7 @@ st.caption(
     "hisse-sektör eşleşmesi ise elle hazırlanmış sabit bir haritadan gelir. Kriterlerin tam açıklaması için "
     "sol menüden **🧭 Nasıl Değerlendiriyoruz?** sayfasına bakabilirsiniz."
 )
-col_a, col_b, col_c = st.columns([1, 1, 1])
+col_a, col_b, col_c = st.columns([1, 1, 1], vertical_alignment="bottom")
 with col_a:
     fund_budget = st.number_input(
         "Fon Bütçesi (TL)", min_value=0.0, value=float(db.get_balance("FUND")), step=1_000.0,
@@ -32,8 +32,6 @@ with col_b:
         help="Varsayılan: Portföyüm sayfasındaki güncel Günlük İşlem Kasası nakit bakiyeniz.",
     )
 with col_c:
-    st.write("")
-    st.write("")
     if st.button("🔄 Verileri Yenile"):
         st.cache_data.clear()
         st.rerun()

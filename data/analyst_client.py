@@ -65,10 +65,14 @@ def _build_rationale(rec: dict, moves: list[dict]) -> tuple[str, str, str]:
     ]
     if rec.get("hedef_getiri_pct") is not None:
         yon = "yukarı" if rec["hedef_getiri_pct"] > 0 else "aşağı"
+        aralik = (
+            f" (en düşük {rec['hedef_fiyat_dusuk']:.2f} — en yüksek {rec['hedef_fiyat_yuksek']:.2f})"
+            if rec.get("hedef_fiyat_dusuk") is not None and rec.get("hedef_fiyat_yuksek") is not None
+            else ""
+        )
         parts.append(
-            f"Ortalama hedef fiyat {rec['hedef_fiyat_ort']:.2f} (en düşük {rec['hedef_fiyat_dusuk']:.2f} — "
-            f"en yüksek {rec['hedef_fiyat_yuksek']:.2f}); bu, güncel fiyata göre yaklaşık %{rec['hedef_getiri_pct']:.1f} "
-            f"{yon} potansiyele işaret ediyor."
+            f"Ortalama hedef fiyat {rec['hedef_fiyat_ort']:.2f}{aralik}; bu, güncel fiyata göre yaklaşık "
+            f"%{rec['hedef_getiri_pct']:.1f} {yon} potansiyele işaret ediyor."
         )
     if moves:
         firms = ", ".join(f"{m['firma']} ({_ACTION_TR.get(m['aksiyon'], m['aksiyon'])}: {m['yeni_derece']})" for m in moves[:5])

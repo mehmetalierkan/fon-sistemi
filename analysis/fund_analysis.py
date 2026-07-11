@@ -132,9 +132,9 @@ def _build_rationale(row: pd.Series, breakdown: list[tuple[str, float]]) -> str:
     return " ".join(parts)
 
 
-def get_fund_detail(fon_kodu: str, as_of: dt.date | None = None) -> dict:
+def get_fund_detail(fon_kodu: str, as_of: dt.date | None = None, fon_tipi: str = "YAT") -> dict:
     as_of = as_of or dt.date.today()
     history = tefas.get_fund_price_history(fon_kodu, periyod_ay=12)
-    alloc_df = tefas.get_fund_allocation_snapshot(as_of, fon_kodu=fon_kodu)
+    alloc_df = tefas.get_fund_allocation_snapshot(as_of, fon_tipi=fon_tipi, fon_kodu=fon_kodu)
     breakdown = tefas.allocation_breakdown(alloc_df.iloc[0]) if not alloc_df.empty else []
     return {"tarihce": history, "varlik_dagilimi": breakdown}

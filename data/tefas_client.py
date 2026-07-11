@@ -7,7 +7,6 @@ varlik sinifi bazinda dagilim (hisse senedi %, devlet tahvili %, ...) verilir.
 from __future__ import annotations
 
 import datetime as dt
-from functools import lru_cache
 
 import pandas as pd
 import requests
@@ -234,7 +233,7 @@ def get_universe_returns(as_of: dt.date | None = None, fon_tipi: str = "YAT") ->
         past_df = get_price_snapshot(target_date, fon_tipi, window_days=10)
         past_df = past_df.rename(columns={"fiyat": "_fiyat_gecmis"})[["fonKodu", "_fiyat_gecmis"]]
         merged = merged.merge(past_df, on="fonKodu", how="left")
-        merged[col] = (merged["fiyat_guncel"] / merged["_fiyat_gecmis"] - 1.0) * 100.0
+        merged[col] = (merged["fiyat_guncel"] / merged["_fiyat_gecmis"].replace(0, float("nan")) - 1.0) * 100.0
         merged = merged.drop(columns=["_fiyat_gecmis"])
 
     merged["kategori"] = merged["fonUnvan"].map(categorize_fund)

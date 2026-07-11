@@ -80,7 +80,8 @@ def get_history_for_ticker(ticker: str, range_: str = "6mo", interval: str = "1d
         return pd.DataFrame(columns=["tarih", "acilis", "yuksek", "dusuk", "kapanis", "hacim"])
     result = result[0]
     timestamps = result.get("timestamp") or []
-    quote = (result.get("indicators") or {}).get("quote", [{}])[0]
+    quote_list = (result.get("indicators") or {}).get("quote") or [{}]
+    quote = quote_list[0] or {}
     df = pd.DataFrame({
         "tarih": pd.to_datetime(timestamps, unit="s"),
         "acilis": quote.get("open"),
@@ -133,13 +134,19 @@ def _rsi(series: pd.Series, period: int = 14) -> pd.Series:
     return 100 - (100 / (1 + rs))
 
 
+def momentum_5g_pct(hist: pd.DataFrame) -> float:
+    """Son 5 islem gununun toplam getiri yuzdesi; yetersiz/sifirli veri icin 0.0 doner."""
+    if len(hist) > 6 and hist["kapanis"].iloc[-6]:
+        return float(hist["kapanis"].iloc[-1] / hist["kapanis"].iloc[-6] - 1) * 100
+    return 0.0
+
+
 def _add_indicators(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.copy()
     df["sma5"] = df["kapanis"].rolling(5).mean()
     df["sma20"] = df["kapanis"].rolling(20).mean()
     df["sma50"] = df["kapanis"].rolling(50).mean()
     df["rsi14"] = _rsi(df["kapanis"], 14)
     df["gunluk_getiri_pct"] = df["kapanis"].pct_change() * 100
     df["hacim_ort20"] = df["hacim"].rolling(20).mean()
-    df["hacim_orani"] = df["hacim"] / df["hacim_ort20"]
+    df["hacim_orani"] = df["hacim"] / df["hacim_ort20"].replace(0, float("nan"))
     return df

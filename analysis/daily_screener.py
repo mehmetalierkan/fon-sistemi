@@ -37,9 +37,7 @@ def _score_watchlist(
         if pd.notna(rsi):
             rsi_score = max(0.0, 1 - abs(rsi - 55) / 25)
         vol_ratio = float(last["hacim_orani"]) if pd.notna(last["hacim_orani"]) else 1.0
-        momentum_5d = (
-            float(last["kapanis"] / hist["kapanis"].iloc[-6] - 1) * 100 if len(hist) > 6 else 0.0
-        )
+        momentum_5d = sc.momentum_5g_pct(hist)
         score = (2.0 if trend_up else 0.0) + rsi_score * 1.5 + min(vol_ratio, 3.0) * 0.5 + max(momentum_5d, 0) * 0.1
         afford_qty = int(budget_tl // last["kapanis"]) if last["kapanis"] else 0
 

@@ -1,6 +1,7 @@
 """Ana sayfa - genel bakis, parametrik butceler ve one cikan enstrumanlar."""
 import datetime as dt
 
+import pandas as pd
 import streamlit as st
 
 from analysis import daily_screener, fund_analysis
@@ -12,10 +13,13 @@ db.init_db()
 
 gradient_title("Fon & BIST/ABD Hisse Analiz Sistemi", "📊")
 st.markdown(
+    '<p class="lead">Bu panel yatırım döngüleriniz için analiz ve öneri üretir; ayrıca ABD borsasını, '
+    "döviz/kıymetli maden fiyatlarını ve farklı yatırım kuruluşlarının analist önerilerini tek yerden "
+    "takip etmenizi sağlar.</p>",
+    unsafe_allow_html=True,
+)
+st.markdown(
     """
-Bu panel yatırım döngüleriniz için analiz ve öneri üretir; ayrıca ABD borsasını, döviz/kıymetli maden
-fiyatlarını ve farklı yatırım kuruluşlarının analist önerilerini tek yerden takip etmenizi sağlar.
-
 - **📈 Haftalık Fon Analizi** — TEFAS fon karşılaştırması, varlık dağılımı ve gerekçeli öneriler.
 - **⚡ Günlük İşlem Analizi** — BIST hisse teknik taraması ve gerekçeli öneriler.
 - **🇺🇸 ABD Borsası** — aynı teknik kriterlerle ABD hisse taraması.
@@ -35,7 +39,7 @@ st.page_link(
 )
 
 st.divider()
-col_h, col_r = st.columns([3, 1])
+col_h, col_r = st.columns([3, 1], vertical_alignment="bottom")
 with col_h:
     st.subheader("⭐ Öne Çıkanlar")
     st.caption(
@@ -43,7 +47,6 @@ with col_h:
         "tam kriter listesi için yukarıdaki **Nasıl Değerlendiriyoruz?** bağlantısına bakın."
     )
 with col_r:
-    st.write("")
     if st.button("🔄 Öne Çıkanları Yenile"):
         st.cache_data.clear()
         st.rerun()
@@ -88,9 +91,9 @@ with tab_fund:
     for rec in recs:
         with st.expander(f"**{rec['fonKodu']}** — {rec['fonUnvan']}", expanded=False):
             m1, m2, m3 = st.columns(3)
-            m1.metric("1 Ay Getiri", f"%{rec['getiri_1a']:.1f}" if rec['getiri_1a'] == rec['getiri_1a'] else "-")
-            m2.metric("3 Ay Getiri", f"%{rec['getiri_3a']:.1f}" if rec['getiri_3a'] == rec['getiri_3a'] else "-")
-            m3.metric("Yıllık Volatilite", f"%{rec['yillik_volatilite_pct']:.1f}" if rec['yillik_volatilite_pct'] == rec['yillik_volatilite_pct'] else "-")
+            m1.metric("1 Ay Getiri", f"%{rec['getiri_1a']:.1f}" if pd.notna(rec['getiri_1a']) else "-")
+            m2.metric("3 Ay Getiri", f"%{rec['getiri_3a']:.1f}" if pd.notna(rec['getiri_3a']) else "-")
+            m3.metric("Yıllık Volatilite", f"%{rec['yillik_volatilite_pct']:.1f}" if pd.notna(rec['yillik_volatilite_pct']) else "-")
             st.markdown(f"**Neden bu fon?** {rec['gerekce']}")
     st.page_link("views/weekly_fund.py", label="Tüm fon karşılaştırma tablosuna git →", icon="📈")
 
@@ -106,8 +109,8 @@ with tab_bist:
         for _, row in top_bist.iterrows():
             with st.expander(f"**{row['kod']}** — {row['fiyat']:.2f} TL (Skor: {row['skor']:.1f})", expanded=False):
                 m1, m2 = st.columns(2)
-                m1.metric("Günlük Değişim", f"%{row['gunluk_getiri_pct']:.2f}" if row['gunluk_getiri_pct'] == row['gunluk_getiri_pct'] else "-")
-                m2.metric("RSI(14)", f"{row['rsi14']:.0f}" if row['rsi14'] == row['rsi14'] else "-")
+                m1.metric("Günlük Değişim", f"%{row['gunluk_getiri_pct']:.2f}" if pd.notna(row['gunluk_getiri_pct']) else "-")
+                m2.metric("RSI(14)", f"{row['rsi14']:.0f}" if pd.notna(row['rsi14']) else "-")
                 st.markdown(f"**Neden bu hisse?** {row['gerekce']}")
     st.page_link("views/daily_stock.py", label="Tüm BIST izleme listesine git →", icon="⚡")
 
@@ -123,8 +126,8 @@ with tab_us:
         for _, row in top_us.iterrows():
             with st.expander(f"**{row['kod']}** — {row['fiyat']:.2f} USD (Skor: {row['skor']:.1f})", expanded=False):
                 m1, m2 = st.columns(2)
-                m1.metric("Günlük Değişim", f"%{row['gunluk_getiri_pct']:.2f}" if row['gunluk_getiri_pct'] == row['gunluk_getiri_pct'] else "-")
-                m2.metric("RSI(14)", f"{row['rsi14']:.0f}" if row['rsi14'] == row['rsi14'] else "-")
+                m1.metric("Günlük Değişim", f"%{row['gunluk_getiri_pct']:.2f}" if pd.notna(row['gunluk_getiri_pct']) else "-")
+                m2.metric("RSI(14)", f"{row['rsi14']:.0f}" if pd.notna(row['rsi14']) else "-")
                 st.markdown(f"**Neden bu hisse?** {row['gerekce']}")
     st.page_link("views/abd_borsasi.py", label="Tüm ABD izleme listesine git →", icon="🇺🇸")
 
@@ -142,6 +145,6 @@ with tab_fx:
             with col:
                 birim = row["birim"]
                 deger = f"{row['fiyat']:.4f}" if birim == "TL" else f"{row['fiyat']:.2f}"
-                col.metric(row["ad"], f"{deger} {birim}", delta=f"%{row['gunluk_getiri_pct']:.2f}" if row['gunluk_getiri_pct'] == row['gunluk_getiri_pct'] else None)
+                col.metric(row["ad"], f"{deger} {birim}", delta=f"%{row['gunluk_getiri_pct']:.2f}" if pd.notna(row['gunluk_getiri_pct']) else None)
                 st.caption(row["sinyal"])
     st.page_link("views/doviz_kiymetli_maden.py", label="Detaylı döviz/kıymetli maden sayfasına git →", icon="💱")

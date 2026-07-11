@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import datetime as dt
 import sqlite3
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
@@ -94,13 +93,18 @@ def add_transaction(
         raise ValueError(f"Gecersiz kasa: {bucket}")
     if side not in ("BUY", "SELL"):
         raise ValueError(f"Gecersiz islem tipi: {side}")
+    if not instrument_code or not instrument_code.strip():
+        raise ValueError("Enstruman kodu bos olamaz")
+    instrument_code = instrument_code.strip()
     if quantity <= 0 or price <= 0:
         raise ValueError("Adet ve fiyat sifirdan buyuk olmalidir")
 
     cost = quantity * price
     conn = get_connection()
     try:
-        balance = float(conn.execute("SELECT balance FROM cash_ledger WHERE bucket = ?", (bucket,)).fetchone()["balance"])
+        conn.execute("BEGIN IMMEDIATE")
+        row = conn.execute("SELECT balance FROM cash_ledger WHERE bucket = ?", (bucket,)).fetchone()
+        balance = float(row["balance"]) if row else 0.0
 
         if side == "BUY":
             if cost > balance + 1e-6:
@@ -144,15 +148,6 @@ def get_transactions(bucket: str) -> list[sqlite3.Row]:
         ).fetchall()
     finally:
         conn.close()
-
-
-@dataclass
-class Position:
-    instrument_code: str
-    instrument_name: str
-    quantity: float
-    avg_cost: float
-    realized_pnl: float
 
 
 def _compute_positions(conn: sqlite3.Connection, bucket: str) -> dict[str, dict]:

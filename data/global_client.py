@@ -105,8 +105,11 @@ def _frankfurter_trend(base_ccy: str) -> dict | None:
     if len(rates) < 2:
         return None
     items = sorted(rates.items())
-    first_val = list(items[0][1].values())[0]
-    last_val = list(items[-1][1].values())[0]
+    first_vals = list((items[0][1] or {}).values())
+    last_vals = list((items[-1][1] or {}).values())
+    if not first_vals or not last_vals:
+        return None
+    first_val, last_val = first_vals[0], last_vals[0]
     if not first_val:
         return None
     return {
@@ -125,7 +128,7 @@ def _metal_secondary_trend(ticker: str) -> dict | None:
         hist = get_us_history(proxy, range_="1mo", interval="1d")
     except Exception:
         return None
-    if hist.empty or len(hist) < 6:
+    if hist.empty or len(hist) < 6 or not hist["kapanis"].iloc[-6]:
         return None
     last = hist.iloc[-1]
     return {
@@ -136,7 +139,6 @@ def _metal_secondary_trend(ticker: str) -> dict | None:
 
 
 def _yon_ve_gerekce(
-    ad: str,
     trend_up: bool,
     rsi: float,
     momentum_pct: float,
@@ -210,6 +212,7 @@ def build_fx_metals_table() -> pd.DataFrame:
     """Doviz paritelerini ve kiymetli madenleri (ons + TL bazli gram) tek tabloda toplar."""
     rows: list[dict] = []
     usdtry = None
+    usdtry_hist = None
     try:
         usdtry_hist = get_us_history("USDTRY=X", range_="3mo", interval="1d")
         if not usdtry_hist.empty:
@@ -218,21 +221,22 @@ def build_fx_metals_table() -> pd.DataFrame:
         pass
 
     for ticker, ad in FX_PAIRS.items():
-        try:
-            hist = get_us_history(ticker, range_="3mo", interval="1d")
-        except Exception:
-            continue
+        if ticker == "USDTRY=X" and usdtry_hist is not None:
+            hist = usdtry_hist
+        else:
+            try:
+                hist = get_us_history(ticker, range_="3mo", interval="1d")
+            except Exception:
+                continue
         if hist.empty:
             continue
         last = hist.iloc[-1]
-        momentum = (
-            float(last["kapanis"] / hist["kapanis"].iloc[-6] - 1) * 100 if len(hist) > 6 else 0.0
-        )
+        momentum = sc.momentum_5g_pct(hist)
         trend_up = bool(
             pd.notna(last["sma20"]) and pd.notna(last["sma50"]) and last["sma20"] > last["sma50"]
         )
         ikincil = _frankfurter_trend(FX_FRANKFURTER_BASE[ticker])
-        sinyal, gerekce, kendi_onerimiz, tutma_suresi = _yon_ve_gerekce(ad, trend_up, last["rsi14"], momentum, ikincil)
+        sinyal, gerekce, kendi_onerimiz, tutma_suresi = _yon_ve_gerekce(trend_up, last["rsi14"], momentum, ikincil)
         rows.append({
             "kod": ticker.replace("=X", ""),
             "ad": ad,
@@ -256,14 +260,12 @@ def build_fx_metals_table() -> pd.DataFrame:
         if hist.empty:
             continue
         last = hist.iloc[-1]
-        momentum = (
-            float(last["kapanis"] / hist["kapanis"].iloc[-6] - 1) * 100 if len(hist) > 6 else 0.0
-        )
+        momentum = sc.momentum_5g_pct(hist)
         trend_up = bool(
             pd.notna(last["sma20"]) and pd.notna(last["sma50"]) and last["sma20"] > last["sma50"]
         )
         ikincil = _metal_secondary_trend(ticker)
-        sinyal, gerekce, kendi_onerimiz, tutma_suresi = _yon_ve_gerekce(ad, trend_up, last["rsi14"], momentum, ikincil)
+        sinyal, gerekce, kendi_onerimiz, tutma_suresi = _yon_ve_gerekce(trend_up, last["rsi14"], momentum, ikincil)
         ons_usd = float(last["kapanis"])
         gram_try = (ons_usd / GRAM_PER_OUNCE) * usdtry if usdtry else None
         rows.append({

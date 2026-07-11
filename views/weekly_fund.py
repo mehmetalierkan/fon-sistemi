@@ -1,6 +1,7 @@
 """Haftalik fon karsilastirma ve gerekceli oneri sayfasi."""
 import datetime as dt
 
+import pandas as pd
 import plotly.express as px
 import streamlit as st
 
@@ -39,9 +40,9 @@ def _load(fon_tipi: str, kategori: str, tema: str, top_n: int, as_of_str: str):
 
 
 @st.cache_data(ttl=3600, show_spinner="Fon detayı yükleniyor...")
-def _load_detail(fon_kodu: str, as_of_str: str):
+def _load_detail(fon_kodu: str, as_of_str: str, fon_tipi: str = "YAT"):
     as_of = dt.date.fromisoformat(as_of_str)
-    return fund_analysis.get_fund_detail(fon_kodu, as_of=as_of)
+    return fund_analysis.get_fund_detail(fon_kodu, as_of=as_of, fon_tipi=fon_tipi)
 
 
 def _pie(breakdown, title, key=None):
@@ -60,7 +61,7 @@ THEME_OPTIONS = [
     "Kıymetli Maden", "Endeks (BIST)", "Girişim Sermayesi", "Katılım / Faizsiz",
 ]
 
-col_a, col_b, col_c, col_d, col_e = st.columns([1, 1, 1, 0.8, 1])
+col_a, col_b, col_c, col_d, col_e = st.columns([1, 1, 1, 0.8, 1], vertical_alignment="bottom")
 with col_a:
     fon_tipi = st.selectbox("Fon Tipi", ["YAT", "EMK", "BYF"], index=0, help="YAT: Yatırım Fonu, EMK: Emeklilik Fonu, BYF: Borsa Yatırım Fonu")
 with col_b:
@@ -79,8 +80,6 @@ with col_c:
 with col_d:
     top_n = st.number_input("Kaç öneri?", min_value=3, max_value=30, value=10)
 with col_e:
-    st.write("")
-    st.write("")
     if st.button("🔄 Verileri Yenile"):
         st.cache_data.clear()
         st.rerun()
@@ -104,10 +103,10 @@ for rec in recommendations:
     tema_etiket = f" · {rec['tema']}" if rec.get("tema") and rec["tema"] != "Genel / Karma" else ""
     with st.expander(f"**{rec['fonKodu']}** — {rec['fonUnvan']} ({rec['kategori']}{tema_etiket})", expanded=False):
         m1, m2, m3, m4 = st.columns(4)
-        m1.metric("1 Hafta", f"%{rec['getiri_1h']:.1f}" if rec['getiri_1h'] == rec['getiri_1h'] else "-")
-        m2.metric("1 Ay", f"%{rec['getiri_1a']:.1f}" if rec['getiri_1a'] == rec['getiri_1a'] else "-")
-        m3.metric("3 Ay", f"%{rec['getiri_3a']:.1f}" if rec['getiri_3a'] == rec['getiri_3a'] else "-")
-        m4.metric("Yıllık Volatilite", f"%{rec['yillik_volatilite_pct']:.1f}" if rec['yillik_volatilite_pct'] == rec['yillik_volatilite_pct'] else "-")
+        m1.metric("1 Hafta", f"%{rec['getiri_1h']:.1f}" if pd.notna(rec['getiri_1h']) else "-")
+        m2.metric("1 Ay", f"%{rec['getiri_1a']:.1f}" if pd.notna(rec['getiri_1a']) else "-")
+        m3.metric("3 Ay", f"%{rec['getiri_3a']:.1f}" if pd.notna(rec['getiri_3a']) else "-")
+        m4.metric("Yıllık Volatilite", f"%{rec['yillik_volatilite_pct']:.1f}" if pd.notna(rec['yillik_volatilite_pct']) else "-")
         st.markdown(f"**Neden bu fon?** {rec['gerekce']}")
         if rec["varlik_dagilimi"]:
             _pie(rec["varlik_dagilimi"], "Varlık Dağılımı (%)", key=f"pie_{rec['fonKodu']}")
@@ -140,7 +139,7 @@ st.divider()
 st.subheader("Fon Detayı")
 selected_fund = st.selectbox("Bir fon kodu seçin", sorted(returns_df["fonKodu"].unique()))
 if selected_fund:
-    detail = _load_detail(selected_fund, as_of.isoformat())
+    detail = _load_detail(selected_fund, as_of.isoformat(), fon_tipi)
     hist = detail["tarihce"]
     if not hist.empty:
         fig = px.line(hist, x="tarih", y="fiyat", title=f"{selected_fund} - 12 Aylık NAV Geçmişi", color_discrete_sequence=CHART_COLORS)
