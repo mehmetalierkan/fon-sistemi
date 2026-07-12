@@ -86,7 +86,7 @@ ozet = df[["kod", "ad", "birim", "fiyat", "gunluk_getiri_pct", "momentum_5g_pct"
 })
 st.dataframe(
     ozet,
-    width="stretch",
+    use_container_width=True,
     column_config={
         "Fiyat": st.column_config.NumberColumn(help="Birim sütununda belirtilen para biriminden anlık fiyat."),
         "Günlük Değişim %": st.column_config.NumberColumn(help="Bir önceki kapanışa göre günlük yüzde değişim.", format="%.2f%%"),
@@ -112,4 +112,4 @@ if secim:
             fig.add_trace(go.Scatter(x=hist["tarih"], y=hist["sma20"], name="SMA20", line=dict(width=1.5, color="#eda100")))
             fig.add_trace(go.Scatter(x=hist["tarih"], y=hist["sma50"], name="SMA50", line=dict(width=1.5, color="#e34948")))
             fig.update_layout(title=f"{secim} — 6 Aylık Fiyat Grafiği")
-            st.plotly_chart(fig, width="stretch")
+            st.plotly_chart(fig, use_container_width=True)

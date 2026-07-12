@@ -75,7 +75,7 @@ def _render_bucket(bucket: str, label: str, price_lookup, code_help: str) -> Non
             })
         st.dataframe(
             pd.DataFrame(rows),
-            width="stretch",
+            use_container_width=True,
             column_config={
                 "Kod": st.column_config.TextColumn(help="Fon kodu veya hisse kodu."),
                 "Adet": st.column_config.NumberColumn(help="Elinizde bulunan güncel adet."),
@@ -113,7 +113,7 @@ def _render_bucket(bucket: str, label: str, price_lookup, code_help: str) -> Non
     if transactions:
         with st.expander("İşlem Geçmişi"):
             tx_rows = [dict(row) for row in transactions]
-            st.dataframe(pd.DataFrame(tx_rows), width="stretch")
+            st.dataframe(pd.DataFrame(tx_rows), use_container_width=True)
 
 
 tab_fund, tab_daily = st.tabs(["📈 Haftalık Fon Kasası", "⚡ Günlük İşlem Kasası"])

@@ -66,7 +66,7 @@ else:
         color_discrete_sequence=[CHART_COLORS[0]],
     )
     fig.update_layout(height=max(400, 28 * len(chart_df)))
-    st.plotly_chart(fig, width="stretch")
+    st.plotly_chart(fig, use_container_width=True)
 
     tema_tablo = tema_perf.rename(
         columns={
@@ -82,7 +82,7 @@ else:
     )
     st.dataframe(
         tema_tablo,
-        width="stretch",
+        use_container_width=True,
         height=400,
         column_config={
             "Tema": st.column_config.TextColumn(help="Fon adından tahmin edilen sektör/tema etiketi."),
@@ -118,7 +118,7 @@ else:
         color_discrete_sequence=[CHART_COLORS[1]],
     )
     fig.update_layout(height=max(360, 32 * len(chart_df)))
-    st.plotly_chart(fig, width="stretch")
+    st.plotly_chart(fig, use_container_width=True)
 
     sektor_tablo = sektor_perf.rename(
         columns={
@@ -132,7 +132,7 @@ else:
     )
     st.dataframe(
         sektor_tablo,
-        width="stretch",
+        use_container_width=True,
         height=400,
         column_config={
             "Sektör": st.column_config.TextColumn(help="Elle hazırlanmış sabit sektör haritasından gelen etiket."),
@@ -167,7 +167,7 @@ else:
         color_discrete_sequence=[CHART_COLORS[2]],
     )
     fig.update_layout(height=max(360, 32 * len(chart_df)))
-    st.plotly_chart(fig, width="stretch")
+    st.plotly_chart(fig, use_container_width=True)
 
     us_sektor_tablo = us_sektor_perf.rename(
         columns={
@@ -181,7 +181,7 @@ else:
     )
     st.dataframe(
         us_sektor_tablo,
-        width="stretch",
+        use_container_width=True,
         height=400,
         column_config={
             "Sektör": st.column_config.TextColumn(help="Elle hazırlanmış sabit sektör haritasından gelen etiket."),

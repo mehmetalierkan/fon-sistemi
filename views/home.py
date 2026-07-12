@@ -39,7 +39,7 @@ st.page_link(
 )
 
 st.divider()
-col_h, col_r = st.columns([3, 1], vertical_alignment="bottom")
+col_h, col_r = st.columns([3, 1])
 with col_h:
     st.subheader("⭐ Öne Çıkanlar")
     st.caption(
@@ -47,6 +47,7 @@ with col_h:
         "tam kriter listesi için yukarıdaki **Nasıl Değerlendiriyoruz?** bağlantısına bakın."
     )
 with col_r:
+    st.write("")
     if st.button("🔄 Öne Çıkanları Yenile"):
         st.cache_data.clear()
         st.rerun()

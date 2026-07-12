@@ -20,7 +20,7 @@ st.caption(
     "hisse-sektör eşleşmesi ise elle hazırlanmış sabit bir haritadan gelir. Kriterlerin tam açıklaması için "
     "sol menüden **🧭 Nasıl Değerlendiriyoruz?** sayfasına bakabilirsiniz."
 )
-col_a, col_b, col_c = st.columns([1, 1, 1], vertical_alignment="bottom")
+col_a, col_b, col_c = st.columns([1, 1, 1])
 with col_a:
     fund_budget = st.number_input(
         "Fon Bütçesi (TL)", min_value=0.0, value=float(db.get_balance("FUND")), step=1_000.0,
@@ -32,6 +32,7 @@ with col_b:
         help="Varsayılan: Portföyüm sayfasındaki güncel Günlük İşlem Kasası nakit bakiyeniz.",
     )
 with col_c:
+    st.write("")
     if st.button("🔄 Verileri Yenile"):
         st.cache_data.clear()
         st.rerun()
@@ -87,7 +88,7 @@ _editor_key = f"hedef_editor_{st.session_state.get('wizard_version', 0)}"
 edited = st.data_editor(
     _source_targets,
     num_rows="dynamic",
-    width="stretch",
+    use_container_width=True,
     column_config={
         "Sektör / Tema": st.column_config.SelectboxColumn(
             "Sektör / Tema",
@@ -177,7 +178,7 @@ def _render_portfolio(title: str, icon: str, df: pd.DataFrame, notes: list, tur_
         title=f"{title} — Sektör Bazında Dağılım (TL)",
         color_discrete_sequence=CHART_COLORS,
     )
-    st.plotly_chart(fig, width="stretch", key=f"pie_{tur_label}")
+    st.plotly_chart(fig, use_container_width=True, key=f"pie_{tur_label}")
 
     ozet = df[
         ["kod", "ad", "sektor", "hedef_pct", "tutar_tl", "getiri_1a", "getiri_3a", "yillik_volatilite_pct", "skor"]
@@ -196,7 +197,7 @@ def _render_portfolio(title: str, icon: str, df: pd.DataFrame, notes: list, tur_
     )
     st.dataframe(
         ozet,
-        width="stretch",
+        use_container_width=True,
         column_config={
             "Kod": st.column_config.TextColumn(help="Fon veya hisse kodu."),
             "Sektör / Tema": st.column_config.TextColumn(help="Hedef tabloda girdiğiniz sektör/tema başlığı."),

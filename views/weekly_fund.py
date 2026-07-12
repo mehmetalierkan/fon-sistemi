@@ -50,7 +50,7 @@ def _pie(breakdown, title, key=None):
     labels = [x[0] for x in capped]
     values = [x[1] for x in capped]
     fig = px.pie(names=labels, values=values, title=title, color_discrete_sequence=CHART_COLORS)
-    st.plotly_chart(fig, width="stretch", key=key)
+    st.plotly_chart(fig, use_container_width=True, key=key)
 
 
 THEME_OPTIONS = [
@@ -61,7 +61,7 @@ THEME_OPTIONS = [
     "Kıymetli Maden", "Endeks (BIST)", "Girişim Sermayesi", "Katılım / Faizsiz",
 ]
 
-col_a, col_b, col_c, col_d, col_e = st.columns([1, 1, 1, 0.8, 1], vertical_alignment="bottom")
+col_a, col_b, col_c, col_d, col_e = st.columns([1, 1, 1, 0.8, 1])
 with col_a:
     fon_tipi = st.selectbox("Fon Tipi", ["YAT", "EMK", "BYF"], index=0, help="YAT: Yatırım Fonu, EMK: Emeklilik Fonu, BYF: Borsa Yatırım Fonu")
 with col_b:
@@ -80,6 +80,7 @@ with col_c:
 with col_d:
     top_n = st.number_input("Kaç öneri?", min_value=3, max_value=30, value=10)
 with col_e:
+    st.write("")
     if st.button("🔄 Verileri Yenile"):
         st.cache_data.clear()
         st.rerun()
@@ -119,7 +120,7 @@ display_cols = [
 ]
 st.dataframe(
     returns_df[display_cols].sort_values("getiri_1a", ascending=False).reset_index(drop=True),
-    width="stretch",
+    use_container_width=True,
     height=400,
     column_config={
         "fonKodu": st.column_config.TextColumn("Fon Kodu", help="TEFAS fon kodu (3 harf)."),
@@ -143,6 +144,6 @@ if selected_fund:
     hist = detail["tarihce"]
     if not hist.empty:
         fig = px.line(hist, x="tarih", y="fiyat", title=f"{selected_fund} - 12 Aylık NAV Geçmişi", color_discrete_sequence=CHART_COLORS)
-        st.plotly_chart(fig, width="stretch")
+        st.plotly_chart(fig, use_container_width=True)
     if detail["varlik_dagilimi"]:
         _pie(detail["varlik_dagilimi"], f"{selected_fund} - Varlık Dağılımı (%)")

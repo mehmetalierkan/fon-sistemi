@@ -84,7 +84,7 @@ if firm_counts:
     )
     c1, c2 = st.columns([2, 3])
     with c1:
-        st.dataframe(firm_df, width="stretch", height=280, hide_index=True)
+        st.dataframe(firm_df, use_container_width=True, height=280, hide_index=True)
     with c2:
         selected_firms = st.multiselect(
             "Kuruma göre filtrele", options=firm_df["Kurum"].tolist(), placeholder="Kurum seçin"
@@ -134,7 +134,7 @@ fig.add_trace(go.Bar(name="Tut", x=chart_df["kod"], y=chart_df["tut"], marker_co
 fig.add_trace(go.Bar(name="Sat", x=chart_df["kod"], y=chart_df["sat"], marker_color="#e87ba4"))
 fig.add_trace(go.Bar(name="Güçlü Sat", x=chart_df["kod"], y=chart_df["guclu_sat"], marker_color="#e34948"))
 fig.update_layout(barmode="stack", title="Analist Öneri Dağılımı (en güçlü konsensuslar)")
-st.plotly_chart(fig, width="stretch")
+st.plotly_chart(fig, use_container_width=True)
 
 st.divider()
 st.subheader("Tüm Tablo")
@@ -147,7 +147,7 @@ ozet = view_df.rename(columns={
 })
 st.dataframe(
     ozet,
-    width="stretch",
+    use_container_width=True,
     height=450,
     column_config={
         "Konsensus Skoru": st.column_config.NumberColumn(help="1.0 = Güçlü Al, 3.0 = Tut, 5.0 = Güçlü Sat (analist ortalaması). Düşük = daha olumlu."),

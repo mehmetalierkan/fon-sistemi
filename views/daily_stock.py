@@ -71,7 +71,7 @@ st.divider()
 st.subheader("Tüm İzleme Listesi")
 st.dataframe(
     screening_df,
-    width="stretch",
+    use_container_width=True,
     height=400,
     column_config={
         "kod": st.column_config.TextColumn("Kod", help="BIST hisse kodu."),
@@ -102,7 +102,7 @@ if selected:
         fig.add_trace(go.Scatter(x=hist["tarih"], y=hist["sma20"], name="SMA20", line=dict(width=1.5, color="#4a3aa7")))
         fig.add_trace(go.Scatter(x=hist["tarih"], y=hist["sma50"], name="SMA50", line=dict(width=1.5, color="#eb6834")))
         fig.update_layout(title=f"{selected} — 6 Aylık Fiyat Grafiği", xaxis_rangeslider_visible=False)
-        st.plotly_chart(fig, width="stretch")
+        st.plotly_chart(fig, use_container_width=True)
         with st.expander("🕯️ Bu mum (candlestick) grafiği nasıl okunur?"):
             st.markdown(
                 """
